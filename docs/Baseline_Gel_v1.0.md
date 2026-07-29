@@ -1,24 +1,64 @@
-# Baseline gelée · Nutristack v1.0 · 26 juillet 2026
+# Baseline gelée · Nutristack · v1.1 · 29 juillet 2026
 
 **Statut : CODE GELÉ.** Aucune modification n’est autorisée sans la grille de
 contrôle ci-dessous. Ce document fige l’empreinte exacte de l’état validé ;
 toute dérive est détectable en recalculant les sommes md5.
 
+**Méthode de calcul**, pour que l’empreinte globale soit rejouable sans
+ambiguïté : md5 de la concaténation des contenus de fichiers, dans l’ordre
+alphabétique des chemins, tous les `*.swift` du dépôt hors `.build`. La méthode
+a été vérifiée en recalculant l’empreinte de la v1.0, qui retombe exactement sur
+`71dfcd98d41c476318e94b9085a615b1`.
+
 ## Empreinte globale
 
-- Fichiers Swift : **58** (hors artefacts `.build`)
-- Lignes totales : **5843**
-- Empreinte globale (md5 concaténé, ordre alphabétique) : `71dfcd98d41c476318e94b9085a615b1`
+| | v1.0 · 26 juillet | v1.1 · 29 juillet |
+|---|---|---|
+| Fichiers Swift (hors `.build`) | 58 | **58** |
+| Lignes totales | 5843 | **5858** |
+| Empreinte globale | `71dfcd98d41c476318e94b9085a615b1` | **`4a70bdd80a03d359d3395ddc5aa8e34d`** |
+
+## Dérive v1.0 → v1.1, exhaustive
+
+Dix fichiers ont changé, aucun n’a été ajouté ni supprimé. **+15 lignes nettes**,
+qui sont des annotations d’isolation et les commentaires qui les justifient :
+aucune ligne de logique n’a été ajoutée, déplacée ni retirée.
+
+| Fichier | md5 v1.0 | md5 v1.1 |
+|---|---|---|
+| `App/Sources/Features/Explore/ExploreView.swift` | `d6f013ff…` | `66217dbe…` |
+| `App/Sources/Features/Product/ProductDetailView.swift` | `edeea8bb…` | `a37edf8b…` |
+| `App/Sources/Features/Profile/ProfileView.swift` | `ebbba2e7…` | `326a1e7a…` |
+| `App/Sources/Features/Scanner/CameraScannerEngine.swift` | `bf51f011…` | `9777e876…` |
+| `App/Sources/Features/Scanner/ScannerEngine.swift` | `ad6a91ee…` | `52eef1b8…` |
+| `App/Sources/Features/Scanner/ScannerView.swift` | `53facc93…` | `925df810…` |
+| `App/Sources/Features/Stack/StackScreen.swift` | `1c26f07e…` | `a8e2cf0d…` |
+| `App/Sources/Features/Today/TodayView.swift` | `743ff375…` | `b272051b…` |
+| `App/Sources/NutriTabBar.swift` | `52628039…` | `e011f18e…` |
+| `App/Sources/RootView.swift` | `7af01efb…` | `65e2afe9…` |
+
+Motif unique, sous grille de contrôle : la concurrence stricte de Swift 6
+n’étend pas l’isolation de `body` aux autres membres d’une vue. Détail complet
+au CHANGELOG 0.3.2 et dans la pull request #2.
 
 ## Statut des tests, formulation contractuelle
 
-- 20/20 tests domaine : **exécutés réellement, PASS** (XCTest, Swift 6.0.3 Linux).
-- 9/9 tests formats : **exécutés réellement, PASS** (harnais, source `DSFormat` identique au md5).
-- 5/5 tests composants : **NON EXÉCUTÉS, BLOCKED** par l’absence du SDK SwiftUI/iOS.
-- **Total : 29/34 exécutés avec succès ; 5/34 restent à exécuter.**
+- 20/20 tests domaine : **exécutés réellement, PASS**.
+- 9/9 tests formats : **exécutés réellement, PASS**.
+- 5/5 tests composants : **exécutés réellement, PASS** — la réserve de la v1.0
+  est levée. Ils l’ont été sur runner macOS 14 sous Xcode 15.4, et non dans un
+  Xcode de poste ; l’environnement diffère de celui qu’annonçait l’étape 6 du
+  protocole, le SDK SwiftUI/iOS y est bien présent, qui était la seule cause du
+  blocage.
+- **Total : 34/34 exécutés avec succès, 0 échec.**
 
-Les 34 tests ne pourront être présentés comme entièrement validés qu’après
-l’exécution réelle des 5 tests composants dans Xcode (protocole, étape 6).
+Preuve : exécution [30462450376](https://github.com/nathexec/nutristack/actions/runs/30462450376)
+sur `main` au commit `cf5f4c8`, 15 étapes vertes, dont build Debug, build
+Release, `swiftlint --strict` (`0 violations, 0 serious in 55 files`) et les
+deux suites de tests. Rapport xUnit publié en artefact `resultats-tests`.
+
+**La réserve « 29/34 » de la v1.0 est close.** Toute présentation du projet
+qui la reprendrait serait désormais fausse.
 
 ## Grille de contrôle avant toute modification
 
@@ -38,18 +78,18 @@ et consigner l’entrée au CHANGELOG.
 | `App/Sources/DataKit/CatalogRepositoryKey.swift` | `031eb3598e2f0ee0086e97e42dca1153` |
 | `App/Sources/Features/Compare/CompareShareSheet.swift` | `bae26f32a0521126b807b8e5fd7fb01b` |
 | `App/Sources/Features/Compare/CompareView.swift` | `a736db3847e2f61b4eb2eee9b34bc331` |
-| `App/Sources/Features/Explore/ExploreView.swift` | `d6f013ffef21c86ac259bc128288b754` |
-| `App/Sources/Features/Product/ProductDetailView.swift` | `edeea8bbf0d31ecb164bda6150011fa6` |
+| `App/Sources/Features/Explore/ExploreView.swift` | `66217dbe5658c33d45ee4cc03f85a8b0` |
+| `App/Sources/Features/Product/ProductDetailView.swift` | `a37edf8b0cdb5fd476a228c92b652257` |
 | `App/Sources/Features/Product/ProductSheets.swift` | `1a778e05b7942fe99fb39e38b6259245` |
-| `App/Sources/Features/Profile/ProfileView.swift` | `ebbba2e7403224df9b4a2d7cff6df435` |
-| `App/Sources/Features/Scanner/CameraScannerEngine.swift` | `bf51f011608d1f62d58f432119891f36` |
-| `App/Sources/Features/Scanner/ScannerEngine.swift` | `ad6a91ee326c859ccaf66740481a366e` |
-| `App/Sources/Features/Scanner/ScannerView.swift` | `53facc937de23832248b357ff07ce7ca` |
-| `App/Sources/Features/Stack/StackScreen.swift` | `1c26f07e44cf878309c869af0eb3921c` |
-| `App/Sources/Features/Today/TodayView.swift` | `743ff3754816d43ed868f02debbe9165` |
-| `App/Sources/NutriTabBar.swift` | `526280391b151d9883702846195c0dde` |
+| `App/Sources/Features/Profile/ProfileView.swift` | `326a1e7adc5eb4c306173665dae38ae8` |
+| `App/Sources/Features/Scanner/CameraScannerEngine.swift` | `9777e876765794afe0bc3eb74fb646b1` |
+| `App/Sources/Features/Scanner/ScannerEngine.swift` | `52eef1b85a1a8737d34e34f4ce4e68da` |
+| `App/Sources/Features/Scanner/ScannerView.swift` | `925df81042e7d72b60ff0cfdd6ba0238` |
+| `App/Sources/Features/Stack/StackScreen.swift` | `a8e2cf0d69a3f82f669c8354f01ae2e0` |
+| `App/Sources/Features/Today/TodayView.swift` | `b272051bd8f7232c7c2e0967ebe62468` |
+| `App/Sources/NutriTabBar.swift` | `e011f18e764bd2c76ee756e0f307c957` |
 | `App/Sources/NutristackApp.swift` | `a196d5166ad376f14c3a73e528702feb` |
-| `App/Sources/RootView.swift` | `7af01efb1dc9945c4ea09dc318ee4088` |
+| `App/Sources/RootView.swift` | `65e2afe9946236a33024c5c6592ed8df` |
 | `App/Sources/Shared/Controls.swift` | `0b934b664f51e540a07a60d3437659ff` |
 | `App/Sources/Shared/ProductDisplay.swift` | `0e3ad8d287ec98523a5b625d9250262d` |
 | `App/Sources/Shared/PushScaffold.swift` | `ec71a40a31fef7b907b4447f62380f16` |

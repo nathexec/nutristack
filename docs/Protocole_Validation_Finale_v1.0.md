@@ -4,6 +4,33 @@
 
 **Statut des tests à l’entrée du protocole** : 20/20 domaine exécutés réellement, PASS · 9/9 formats exécutés réellement, PASS · 5/5 composants NON EXÉCUTÉS, BLOCKED (SDK SwiftUI/iOS absent de l’environnement de préparation) · total 29/34 exécutés avec succès, 5/34 restent à exécuter. Les 34 ne seront déclarés validés qu’après l’étape 6.
 
+> **Addendum du 29 juillet 2026 — les étapes 2 à 8 sont PASS.** Le texte
+> ci-dessus décrit l’état d’entrée du 26 juillet et n’est pas réécrit : c’est un
+> état daté, pas un état courant. Ce qui a changé depuis figure au CHANGELOG
+> 0.3.2 et dans `docs/Baseline_Gel_v1.0.md`, refigé en v1.1.
+>
+> Les étapes 2 à 8 ont été exécutées sur runner macOS 14 / Xcode 15.4 plutôt
+> que sur un Mac de poste, et sont automatisées par
+> `.github/workflows/build-and-test.yml`. **Résultat : PASS pour les sept**,
+> exécution [30462450376](https://github.com/nathexec/nutristack/actions/runs/30462450376).
+> **Le total est désormais 34/34 exécutés, 0 échec**, réserve close.
+>
+> Cette première exécution a levé 49 erreurs de compilation, toutes traitées
+> sous grille de contrôle avant correction. Les étapes 4 et 5 avaient d’ailleurs
+> anticipé le bon domaine de risque en nommant l’isolation d’acteur, mais pas la
+> bonne forme : le repli proposé (`Task { @MainActor in … }`) aurait été un
+> contresens ici, la correction juste étant l’annotation `@MainActor` des
+> membres privés de vue.
+>
+> **Deux points de procédure à rectifier pour une prochaine version du
+> protocole.** L’étape 7 dit « ⌘U sur les deux paquets » et l’étape 8 mentionne
+> un « schéma de test » : il n’existe aucune cible ni aucun schéma de test dans
+> `project.yml`, XcodeGen n’en générant pas pour les paquets locaux. La
+> formulation exacte est celle que l’étape 6 donne déjà entre parenthèses,
+> `swift test --package-path <paquet>`. Les étapes 9 à 22 restent à exécuter :
+> elles exigent un simulateur piloté à la main, un appareil physique ou
+> Instruments, qu’aucune automatisation ne remplace.
+
 **Matériel requis** : Mac (macOS 14+), Xcode 15.x (pas 16 : les variantes d’icône sombre/teintée ne sont volontairement pas déclarées), `brew install xcodegen swiftlint`, simulateur iPhone 15 (iOS 17), un iPhone physique sous iOS 17, les polices Schibsted Grotesk (Google Fonts, licence SIL OFL, fichiers statiques).
 
 **Règles transverses** :
