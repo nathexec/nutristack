@@ -6,17 +6,25 @@ Design System v2.0.1. Jalon **M1** du Plan d’exécution v1.0.1.
 
 ## Démarrage
 
-Prérequis : macOS avec **Xcode 15** ou plus récent, et **XcodeGen**
-(`brew install xcodegen`). Le projet Xcode est généré, jamais versionné.
+Prérequis : macOS avec **Xcode 15.x** — pas 16, les variantes d’icône sombre et
+teintée n’étant volontairement pas déclarées — et **XcodeGen 2.43.0**
+(`brew install xcodegen` installe une version plus récente, qui produit un
+projet au format que Xcode 15.4 refuse ; la CI épingle 2.43.0, voir
+`.github/actions/toolchain`). Le projet Xcode est généré, jamais versionné.
 
 ```bash
 ./scripts/bootstrap.sh        # génère Nutristack.xcodeproj et l’ouvre
 ```
 
-Polices (rendu contractuel) : téléchargez la famille **Schibsted Grotesk**
-(Google Fonts, licence SIL OFL) et déposez les cinq graisses dans
-`Packages/NutristackDesignSystem/Sources/NutristackDesignSystem/Resources/Fonts/`.
-Sans elles, l’app fonctionne avec la police système (repli silencieux).
+Polices (rendu contractuel) : la famille **Schibsted Grotesk** (Google Fonts,
+licence SIL OFL) est versionnée dans
+`Packages/NutristackDesignSystem/Sources/NutristackDesignSystem/Resources/Fonts/`,
+limitée aux **cinq graisses statiques** que le code emploie — Regular, Medium,
+SemiBold, Bold, ExtraBold. `DSFontRegistrar` enregistre tout `.ttf` présent dans
+ce dossier : y ajouter des italiques ou d’autres graisses les embarquerait dans
+le binaire sans qu’aucun style ne les demande, la hiérarchie typographique du
+DS §4 se construisant par la graisse et jamais par un changement de famille.
+Sans les polices, l’app fonctionne avec la police système (repli silencieux).
 
 Cible : iOS 17, iPhone, portrait. Compilez le schéma `Nutristack` sur un
 simulateur ou un appareil.
@@ -35,8 +43,8 @@ calculée dans une vue** : chaque valeur affichée (1,11 €/g, −40 %, 3 août
 53,70 €...) est dérivée du paquet de domaine, que les tests `DomainTests`
 verrouillent sur la maquette. Les seules chaînes littérales des écrans sont
 la microcopie ; dates, masses, montants et notes passent tous par `DSFormat`.
-Concurrence stricte (`complete`) et avertissements traités en erreurs
-(`Config/Base.xcconfig`).
+Concurrence stricte en mode `targeted` sur la cible applicative et
+avertissements traités en erreurs (`Config/Base.xcconfig`).
 
 ## Correspondance avec la maquette
 
@@ -97,10 +105,18 @@ un recouvrement plein écran retire l’arrière-plan de l’arbre d’accessibi
 
 ## Qualité
 
-`swiftlint --strict` et SwiftFormat avec configurations versionnées ;
-CI GitHub Actions (`.github/workflows/ci.yml`) : lint, tests du domaine,
-compilation de l’app, tests du design system sur simulateur. Porte M1 :
-zéro avertissement vérifié dans Xcode avant fusion.
+`swiftlint --strict` et SwiftFormat avec configurations versionnées.
+
+**Intégration continue** : un seul workflow,
+`.github/workflows/build-and-test.yml`, sur `main` et sur chaque pull request.
+Il enchaîne génération du projet, résolution SPM, lint strict, build Debug,
+build Release, puis les 34 tests par `swift test` sur les deux paquets — il
+n’existe aucune cible de test Xcode, XcodeGen n’en générant pas pour les
+paquets locaux — et publie le rapport xUnit en artefact. Les versions d’outils
+sont épinglées dans `.github/actions/toolchain`.
+
+Porte M1 : zéro avertissement, garanti par `SWIFT_TREAT_WARNINGS_AS_ERRORS`,
+donc un build vert vaut panneau Issues vide.
 
 ## Écarts avec la maquette · résolus par le Prototype v1.1
 
