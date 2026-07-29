@@ -85,15 +85,19 @@ jobs:
       - name: Préparer le dossier de rapports
         run: mkdir -p build/reports
 
+      # `--parallel` n'est pas un réglage de vitesse : sous SwiftPM 5.10,
+      # `--xunit-output` n'écrit son rapport que depuis l'exécuteur parallèle.
+      # Sans lui, les tests passent, aucun fichier n'est produit, et la
+      # publication d'artefact retombe dans le défaut qu'elle devait clore.
       - name: Tests du domaine, 20 tests (étapes 6 et 7)
         id: tests-domaine
         run: |
-          swift test --package-path Packages/NutristackDomain \
+          swift test --package-path Packages/NutristackDomain --parallel \
             --xunit-output "$GITHUB_WORKSPACE/build/reports/domaine.xml"
 
       - name: Tests du design system, 14 tests (étapes 6 et 7)
         run: |
-          swift test --package-path Packages/NutristackDesignSystem \
+          swift test --package-path Packages/NutristackDesignSystem --parallel \
             --xunit-output "$GITHUB_WORKSPACE/build/reports/design-system.xml"
 
       # `always()` est indispensable : une condition `if` sans fonction de
