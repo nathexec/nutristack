@@ -1,0 +1,28 @@
+# Intégration continue (Plan §2, porte M1) : lint, tests des paquets, build de l’app.
+#
+# Les deux paquets se testent avec `swift test` sur l’hôte macOS : c’est plus
+# rapide qu’un simulateur et cela évite de dépendre d’un schéma Xcode que
+# XcodeGen ne génère pas pour les paquets locaux.
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+jobs:
+  build-and-test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils
+        run: brew install xcodegen swiftlint
+      - name: Lint
+        run: swiftlint --strict
+      - name: Tests du domaine
+        run: swift test --package-path Packages/NutristackDomain
+      - name: Tests du design system
+        run: swift test --package-path Packages/NutristackDesignSystem
+      - name: Génération du projet
+        run: xcodegen generate
+      - name: Compilation de l’app
+        run: >
+          xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack
+          -destination 'platform=iOS Simulator,name=iPhone 15' CODE_SIGNING_ALLOWED=NO

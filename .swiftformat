@@ -1,0 +1,8 @@
+# Configuration SwiftFormat partagée (Plan §4).
+--swiftversion 5.10
+--indent 4
+--maxwidth 120
+--wraparguments before-first
+--stripunusedargs closure-only
+--self remove
+--importgrouping testable-bottom

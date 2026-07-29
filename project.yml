@@ -1,0 +1,45 @@
+# Nutristack · définition de projet XcodeGen
+# Le projet Xcode est généré, jamais versionné : `xcodegen generate` (voir scripts/bootstrap.sh).
+# Référence : Plan d’exécution v1.0.1, §3 (méthode) et §4 (standards iOS).
+name: Nutristack
+options:
+  bundleIdPrefix: com.nutristack
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  xcodeVersion: "15.0"
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+packages:
+  NutristackDesignSystem:
+    path: Packages/NutristackDesignSystem
+  NutristackDomain:
+    path: Packages/NutristackDomain
+targets:
+  # L’Info.plist est généré sous Config/ et non dans un dossier de sources :
+  # placé dans « sources », il serait aussi copié comme ressource du bundle.
+  Nutristack:
+    type: application
+    platform: iOS
+    sources:
+      - App/Sources
+      - App/Resources
+    dependencies:
+      - package: NutristackDesignSystem
+      - package: NutristackDomain
+    info:
+      path: Config/Info.plist
+      properties:
+        CFBundleDisplayName: Nutristack
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NSCameraUsageDescription: "La caméra sert uniquement à scanner le code-barres des produits pour retrouver leur fiche."
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic

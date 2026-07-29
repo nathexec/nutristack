@@ -1,0 +1,22 @@
+# Configuration SwiftLint partagée (Plan §4). Zéro avertissement en CI.
+included: [App, Packages]
+# Les .build des paquets contiennent les fichiers générés par SwiftPM
+# (découverte de tests Linux) : hors du périmètre de lint.
+excluded: [Packages/*/Tests, .build, Packages/*/.build]
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+  - explicit_init
+  - first_where
+  - sorted_imports
+line_length:
+  warning: 120
+  error: 160
+identifier_name:
+  min_length: 2
+  # « id » est un nom légitime et court par convention Swift.
+  excluded: [id]
+type_body_length:
+  warning: 300
+file_length:
+  warning: 450

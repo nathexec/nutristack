@@ -1,0 +1,9 @@
+.DS_Store
+.build/
+DerivedData/
+xcuserdata/
+*.xcodeproj
+!project.yml
+
+# Généré par XcodeGen
+Config/Info.plist

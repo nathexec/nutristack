@@ -1,0 +1,67 @@
+# Build + tests réels sur runner macOS hébergé par GitHub (gratuit sur dépôt
+# public ; quota mensuel sur dépôt privé). Couvre les étapes 2 à 8 du
+# protocole de validation finale : résolution, build Debug, build Release,
+# les 34 tests XCTest (dont les 5 tests composants, jusqu'ici BLOCKED),
+# vérification des avertissements, lint.
+name: Build et tests Nutristack
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-test:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Sélectionner Xcode 15
+        run: sudo xcode-select -switch /Applications/Xcode_15.4.app
+
+      - name: Vérifier les 5 polices
+        run: |
+          DIR="Packages/NutristackDesignSystem/Sources/NutristackDesignSystem/Resources/Fonts"
+          for name in Regular Medium SemiBold Bold ExtraBold; do
+            test -f "$DIR/SchibstedGrotesk-$name.ttf" || { echo "::error::police manquante : $name"; exit 1; }
+          done
+          echo "5 polices présentes"
+
+      - name: Installer xcodegen et swiftlint
+        run: brew install xcodegen swiftlint
+
+      - name: Générer le projet (étape 2)
+        run: ./scripts/bootstrap.sh
+
+      - name: Résoudre les dépendances (étape 3)
+        run: xcodebuild -resolvePackageDependencies -project Nutristack.xcodeproj
+
+      - name: Lint strict
+        run: swiftlint --strict
+
+      - name: Build Debug, cible complète (étape 4)
+        run: |
+          xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack \
+            -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15' \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Build Release, cible complète (étape 5)
+        run: |
+          xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack \
+            -configuration Release -destination 'platform=iOS Simulator,name=iPhone 15' \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Exécuter les 34 tests XCTest (étapes 6 et 7)
+        run: |
+          xcodebuild test -project Nutristack.xcodeproj -scheme Nutristack \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            | xcpretty --test && exit ${PIPESTATUS[0]}
+
+      - name: Publier le journal de tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultats-tests
+          path: build/reports
