@@ -44,7 +44,7 @@ struct RootView: View {
 
     /// Contenu de l’onglet courant, avec la transition de navigation du DS §8
     /// (fondu + léger décalage vertical).
-    @ViewBuilder private var tabContent: some View {
+    @MainActor @ViewBuilder private var tabContent: some View {
         Group {
             switch router.tab {
             case .today: TodayView()

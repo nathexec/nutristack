@@ -41,12 +41,12 @@ struct StackScreen: View {
         .background(DSColor.bg)
     }
 
-    private var eyebrow: String {
+    @MainActor private var eyebrow: String {
         let count = stack.entries.count
         return "\(count) produit\(count > 1 ? "s" : "") actif\(count > 1 ? "s" : "")"
     }
 
-    private var tiles: some View {
+    @MainActor private var tiles: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible())],
                   spacing: 10) {
             MetricTile(moneyCents: stack.monthlyCostCents,
@@ -60,14 +60,14 @@ struct StackScreen: View {
         .padding(.top, DSSpacing.s16)
     }
 
-    private var nextRestockUnit: String {
+    @MainActor private var nextRestockUnit: String {
         guard let next = stack.nextRestock else { return "aucun suivi" }
         return "\(next.entry.product.shortName) · ≈ \(next.forecast.daysLeft)\u{00A0}j"
     }
 
     /// Les rangées suivent l’ordre de la stack, comme la maquette, et non
     /// l’ordre d’urgence des rachats.
-    private var rows: some View {
+    @MainActor private var rows: some View {
         let lastID = stack.entries.last?.id
         return VStack(spacing: 0) {
             ForEach(stack.entries) { entry in
@@ -78,7 +78,7 @@ struct StackScreen: View {
         }
     }
 
-    private func row(for alert: RestockAlert) -> some View {
+    @MainActor private func row(for alert: RestockAlert) -> some View {
         Button {
             router.openProduct(alert.entry.product)
         } label: {

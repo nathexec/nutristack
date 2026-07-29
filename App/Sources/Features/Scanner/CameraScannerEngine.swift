@@ -1,4 +1,9 @@
-import AVFoundation
+// AVFoundation n’est pas audité pour la concurrence stricte de Swift 6 :
+// `nonisolated(unsafe)` ci-dessous protège l’accès inter-acteurs à nos
+// propriétés, mais pas leur capture dans les fermetures @Sendable implicites
+// de `DispatchQueue.async`. `@preconcurrency` couvre ce second cas, sans
+// affaiblir la vérification de notre propre code.
+@preconcurrency import AVFoundation
 import SwiftUI
 
 /// Moteur caméra : session AVFoundation limitée aux métadonnées EAN-13 et

@@ -65,7 +65,12 @@ enum ScannerEngineFactory {
     /// Code-barres de repli du mode simulé : celui du produit que la
     /// démonstration met en avant. Il vit ici plutôt que dans l’écran, qui
     /// n’a pas à connaître le catalogue de démonstration.
-    static let demonstrationCode = DemoCatalog.albaMagnesium.ean
+    ///
+    /// `nonisolated` parce que cette constante sert de valeur par défaut à
+    /// `make` ci-dessous : une valeur par défaut d’argument est évaluée chez
+    /// l’appelant, hors de l’acteur principal. Sûr ici, la valeur étant un
+    /// `String` immuable issu de `DemoCatalog`, lui-même non isolé.
+    nonisolated static let demonstrationCode = DemoCatalog.albaMagnesium.ean
 
     static func make(demoCode: String = demonstrationCode) -> any ScannerEngine {
         #if targetEnvironment(simulator)

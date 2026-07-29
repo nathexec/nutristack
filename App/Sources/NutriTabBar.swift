@@ -24,7 +24,7 @@ struct NutriTabBar: View {
         .background(.ultraThinMaterial)
     }
 
-    private func tab(_ target: AppRouter.Tab, icon: String, label: String) -> some View {
+    @MainActor private func tab(_ target: AppRouter.Tab, icon: String, label: String) -> some View {
         let isOn = router.tab == target
         return Button {
             router.tab = target
@@ -47,7 +47,7 @@ struct NutriTabBar: View {
 
     /// Bouton Scan : disque 56 accent surélevé de 22, seule ombre autorisée
     /// de la barre (DS §5).
-    private var scanButton: some View {
+    @MainActor private var scanButton: some View {
         Button {
             router.openScanner()
         } label: {

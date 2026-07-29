@@ -47,7 +47,7 @@ struct TodayView: View {
 
     /// Journée avec au moins une prise planifiée : résumé, progression,
     /// sections, veille de stock et sortie vers Explorer.
-    @ViewBuilder private var routineContent: some View {
+    @MainActor @ViewBuilder private var routineContent: some View {
         summary
         SegmentedProgress(total: store.plannedCount, completed: store.takenCount)
             .padding(.top, DSSpacing.s16)
@@ -66,7 +66,7 @@ struct TodayView: View {
 
     /// Résumé : prises à gauche, coût du jour à droite, tous deux au format
     /// prix étiquette, compteurs animés (DS §4 et §8).
-    private var summary: some View {
+    @MainActor private var summary: some View {
         HStack(alignment: .bottom, spacing: DSSpacing.s16) {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Routine").dsStyle(.label).foregroundStyle(DSColor.ink3)
@@ -92,7 +92,7 @@ struct TodayView: View {
         .padding(.top, DSSpacing.s16)
     }
 
-    private var intakeSections: some View {
+    @MainActor private var intakeSections: some View {
         ForEach(store.sections) { section in
             SectionLabel(title: section.title, meta: section.time)
             let lastID = section.items.last?.id
@@ -119,7 +119,7 @@ struct TodayView: View {
     /// « À surveiller » : produit dont le stock s’épuise le premier, chip ambre
     /// de jours restants, jauge fine (DS §7). Tous les libellés viennent du
     /// domaine ; le seuil d’alerte est celui de `RestockForecast`.
-    @ViewBuilder private var watchSection: some View {
+    @MainActor @ViewBuilder private var watchSection: some View {
         if let alert = store.watch {
             let entry = alert.entry
             let forecast = alert.forecast
