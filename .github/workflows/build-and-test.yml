@@ -1,11 +1,14 @@
 # Validation complète sur runner macOS hébergé par GitHub. Couvre les étapes 2
-# à 8 du protocole de validation finale : résolution, build Debug, build
-# Release, les 34 tests XCTest (20 domaine, 9 formats, 5 composants),
-# vérification des avertissements, lint.
+# à 8 du protocole de validation finale, dans leur ordre : génération,
+# résolution, build Debug, build Release, les 34 tests XCTest, lint strict.
 #
-# Ce workflow est la porte de qualité du dépôt. Il tourne sur les pull requests
-# autant que sur `main` : sans ce déclencheur, une régression n'était détectée
-# qu'après fusion, les 34 tests ne protégeant aucune revue.
+# Workflow unique. Le dépôt en comptait deux qui rejouaient chacun le lint, la
+# génération du projet et la compilation de l'app sur les mêmes déclencheurs :
+# coût runner et points de panne doublés pour un résultat identique.
+#
+# Il tourne sur les pull requests autant que sur `main` : limité à `push:
+# main`, il ne protégeait aucune revue et ne signalait une régression qu'une
+# fois celle-ci fusionnée.
 name: Build et tests Nutristack
 
 on:
@@ -15,8 +18,8 @@ on:
   workflow_dispatch: {}
 
 env:
-  # Destination unique pour les trois étapes xcodebuild. Sans `OS=`, xcodebuild
-  # répond « Using the first of multiple matching destinations » et choisit un
+  # Destination unique pour les étapes xcodebuild. Sans `OS=`, xcodebuild
+  # répond « Using the first of multiple matching destinations » et retient un
   # runtime arbitraire, qui change avec l'image du runner : on ne validait plus
   # la cible documentée (iPhone 15 / iOS 17, Protocole_Validation_Finale_v1.0).
   DESTINATION: platform=iOS Simulator,name=iPhone 15,OS=17.5
@@ -59,7 +62,7 @@ jobs:
       - name: Résoudre les dépendances (étape 3)
         run: xcodebuild -resolvePackageDependencies -project Nutristack.xcodeproj
 
-      - name: Lint strict
+      - name: Lint strict (étape 8)
         run: swiftlint --strict
 
       - name: Build Debug, cible complète (étape 4)
@@ -74,21 +77,34 @@ jobs:
             -configuration Release -destination "$DESTINATION" \
             | xcpretty && exit ${PIPESTATUS[0]}
 
-      - name: Exécuter les 34 tests XCTest (étapes 6 et 7)
-        id: tests
-        run: |
-          xcodebuild test -project Nutristack.xcodeproj -scheme Nutristack \
-            -destination "$DESTINATION" \
-            -resultBundlePath build/reports/Nutristack.xcresult \
-            | xcpretty --test && exit ${PIPESTATUS[0]}
+      # Les 34 tests vivent dans les deux paquets SPM ; `project.yml` ne déclare
+      # qu'une cible application, sans cible de test. `xcodebuild test` sur le
+      # schéma Nutristack ne peut donc pas fonctionner — il répond « Scheme
+      # Nutristack is not currently configured for the test action » — et
+      # `swift test` est de toute façon plus rapide qu'un simulateur.
+      - name: Préparer le dossier de rapports
+        run: mkdir -p build/reports
 
-      # Publié en succès comme en échec, mais seulement si l'étape de test a
-      # bien tourné : conditionner sur `always()` seul faisait échouer la
-      # publication quand un build amont s'arrêtait avant d'écrire le bundle.
-      # `if-no-files-found: error` empêche le retour du défaut d'origine, un
+      - name: Tests du domaine, 20 tests (étapes 6 et 7)
+        id: tests-domaine
+        run: |
+          swift test --package-path Packages/NutristackDomain \
+            --xunit-output "$GITHUB_WORKSPACE/build/reports/domaine.xml"
+
+      - name: Tests du design system, 14 tests (étapes 6 et 7)
+        run: |
+          swift test --package-path Packages/NutristackDesignSystem \
+            --xunit-output "$GITHUB_WORKSPACE/build/reports/design-system.xml"
+
+      # `always()` est indispensable : une condition `if` sans fonction de
+      # statut se voit implicitement combinée à `success()`, et la publication
+      # était alors sautée précisément quand le rapport importe le plus, sur
+      # échec. Le garde sur `skipped` évite l'inverse, échouer faute de rapport
+      # quand une étape amont s'est arrêtée avant que les tests ne tournent.
+      # `if-no-files-found: error` interdit le retour du défaut d'origine : un
       # chemin inexistant publié en silence sous un simple avertissement.
       - name: Publier le rapport de tests
-        if: steps.tests.conclusion != 'skipped'
+        if: always() && steps.tests-domaine.conclusion != 'skipped'
         uses: actions/upload-artifact@v5
         with:
           name: resultats-tests
