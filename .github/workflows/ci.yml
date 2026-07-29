@@ -21,7 +21,9 @@ jobs:
       - name: Tests du design system
         run: swift test --package-path Packages/NutristackDesignSystem
       - name: Génération du projet
-        run: xcodegen generate
+        run: |
+          xcodegen generate
+          sed -i '' -E 's/objectVersion = [0-9]+;/objectVersion = 60;/' Nutristack.xcodeproj/project.pbxproj
       - name: Compilation de l’app
         run: >
           xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack
