@@ -67,14 +67,15 @@ enum ScannerEngineFactory {
     /// n’a pas à connaître le catalogue de démonstration.
     static let demonstrationCode = DemoCatalog.albaMagnesium.ean
 
-    static func make(demoCode: String = demonstrationCode) -> any ScannerEngine {
+    static func make(demoCode: String? = nil) -> any ScannerEngine {
+        let resolvedDemoCode = demoCode ?? demonstrationCode
         #if targetEnvironment(simulator)
-        return SimulatedScannerEngine(demoCode: demoCode)
+        return SimulatedScannerEngine(demoCode: resolvedDemoCode)
         #else
         if CameraScannerEngine.isAuthorizedOrUndetermined {
-            return CameraScannerEngine(fallbackDemoCode: demoCode)
+            return CameraScannerEngine(fallbackDemoCode: resolvedDemoCode)
         }
-        return SimulatedScannerEngine(demoCode: demoCode)
+        return SimulatedScannerEngine(demoCode: resolvedDemoCode)
         #endif
     }
 }
