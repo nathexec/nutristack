@@ -47,6 +47,19 @@ génération et la compilation déjà faits ailleurs. SwiftLint épinglé à 0.5
 Xcode sélectionné explicitement, `timeout-minutes` posé sur le job, versions
 d’outils regroupées dans une action composite.
 
+**Cohérence du dépôt.** Trois affirmations fausses du README corrigées : il
+annonçait une concurrence stricte `complete` là où `Config/Base.xcconfig` dit
+`targeted` — et se contredisait lui-même une section plus bas —, renvoyait à
+`.github/workflows/ci.yml` qui n’existe plus, et décrivait des tests de design
+system « sur simulateur » alors qu’ils tournent par `swift test` sur l’hôte. Le
+prérequis Xcode est précisé, 15.x et non « 15 ou plus récent », le projet
+excluant délibérément Xcode 16. **Sept fichiers de police retirés** : le dossier
+en comptait douze, italiques et graisse Black comprises, quand le code n’emploie
+que cinq graisses et que `DSFontRegistrar` enregistre indistinctement tout
+`.ttf` du dossier — 719 Ko embarqués dans le binaire sans qu’aucun style ne les
+demande, et une porte ouverte à l’italique que le DS §4 proscrit. L’étape 1 du
+protocole exige « les 5 noms exacts, rien d’autre » : elle est désormais PASS.
+
 **Statut des tests, désormais sans réserve : 34/34 exécutés, 0 échec** (20
 domaine, 9 formats, 5 composants). Build Debug et Release verts, zéro
 avertissement compilateur (ils sont traités en erreurs), `swiftlint --strict`
