@@ -31,7 +31,7 @@ struct ProfileView: View {
         .sheet(isPresented: $isCharterPresented) { CharterSheet() }
     }
 
-    private var appearancePicker: some View {
+    @MainActor private var appearancePicker: some View {
         let modes = AppearanceStore.Mode.allCases
         return DSSegmented(options: modes.map(\.label),
                            selectedIndex: Binding(

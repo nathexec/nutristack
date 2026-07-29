@@ -68,7 +68,7 @@ struct ProductDetailView: View {
         product.variants[min(variantIndex, product.variants.count - 1)]
     }
 
-    private var isInStack: Bool { stack.contains(product) }
+    @MainActor private var isInStack: Bool { stack.contains(product) }
 
     // MARK: En-tête
 
@@ -285,7 +285,7 @@ struct ProductDetailView: View {
 
     // MARK: Actions
 
-    private func addToStack() {
+    @MainActor private func addToStack() {
         guard stack.add(product) else { return }
         router.show("\(product.shortName) ajouté à votre stack")
     }
@@ -300,7 +300,7 @@ struct ProductDetailView: View {
         loadedReviews = await repository.reviews(for: product.id)
     }
 
-    private func compare() {
+    @MainActor private func compare() {
         guard let alternative else { return }
         router.openCompare(product, alternative)
     }
