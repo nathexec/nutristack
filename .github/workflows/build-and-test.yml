@@ -29,11 +29,15 @@ jobs:
           done
           echo "5 polices présentes"
 
-      - name: Installer xcodegen et swiftlint
-        run: brew install xcodegen swiftlint
+      - name: Installer l'outillage épinglé
+        uses: ./.github/actions/toolchain
 
+      # Le protocole de validation désigne `./scripts/bootstrap.sh`, qui est un
+      # script de poste de travail : il se termine par `open Nutristack.xcodeproj`,
+      # sans objet sur un runner sans session graphique. On appelle donc
+      # directement la seule commande utile en CI, celle que bootstrap.sh exécute.
       - name: Générer le projet (étape 2)
-        run: ./scripts/bootstrap.sh
+        run: xcodegen generate
 
       - name: Résoudre les dépendances (étape 3)
         run: xcodebuild -resolvePackageDependencies -project Nutristack.xcodeproj

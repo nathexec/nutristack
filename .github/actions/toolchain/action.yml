@@ -1,0 +1,74 @@
+# Outillage de construction, à versions épinglées.
+#
+# Pourquoi ne pas utiliser `brew install xcodegen swiftlint` : Homebrew installe
+# toujours la dernière version publiée. Un dépôt dont le code est gelé se
+# retrouve alors avec une chaîne de construction qui bouge sous lui, et une CI
+# qui rougit sur du code inchangé. Deux occurrences constatées :
+#
+#   - XcodeGen ≥ 2.44.0 écrit le projet dans un format que refuse Xcode 15.4,
+#     la version que ce projet cible délibérément : « The project 'Nutristack'
+#     cannot be opened because it is in a future Xcode project file format ».
+#     Versions mesurées sur runner macos-14 avec Xcode 15.4 :
+#
+#         2.43.0 -> objectVersion 54 -> lisible
+#         2.44.0 -> objectVersion 70 -> refusé
+#         2.45.4 -> objectVersion 77 -> refusé
+#
+#     2.43.0 est donc la version la plus récente utilisable ici.
+#
+#   - SwiftLint est exécuté avec `--strict`, qui promeut tout avertissement en
+#     erreur. Chaque nouvelle règle d'une version ultérieure est donc un échec
+#     de CI en puissance. 0.57.0 est la version sous laquelle la baseline v1.0
+#     a été validée (docs/Validation_Xcode_Nutristack_v1.0.md).
+#
+# Le choix de rester sur Xcode 15.x n'est pas un retard subi mais une décision
+# du projet : docs/Protocole_Validation_Finale_v1.0.md §matériel requis, et
+# docs/Icone_Nutristack_v1.1.md (les variantes d'icône sombre et teintée ne sont
+# volontairement pas déclarées, elles exigeraient Xcode 16).
+name: Outillage Nutristack
+description: Installe XcodeGen et SwiftLint à des versions épinglées et reproductibles.
+
+inputs:
+  xcodegen-version:
+    description: Version de XcodeGen. Dernière compatible avec le format de projet d'Xcode 15.4.
+    default: "2.43.0"
+  swiftlint-version:
+    description: Version de SwiftLint. Celle sous laquelle la baseline v1.0 a été validée.
+    default: "0.57.0"
+
+runs:
+  using: composite
+  steps:
+    - name: Installer XcodeGen ${{ inputs.xcodegen-version }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" \
+          "https://github.com/yonaskolb/XcodeGen/releases/download/${{ inputs.xcodegen-version }}/xcodegen.zip"
+        unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP/xcodegen"
+        # L'archive contient un bundle `bin/` + `share/` : on ajoute `bin` au
+        # PATH sans déplacer le binaire, qui lit ses gabarits dans `share`.
+        bin="$(find "$RUNNER_TEMP/xcodegen" -type f -name xcodegen | head -1)"
+        test -n "$bin" || { echo "::error::binaire xcodegen introuvable dans l'archive"; exit 1; }
+        chmod +x "$bin"
+        (cd "$(dirname "$bin")" && pwd) >> "$GITHUB_PATH"
+
+    - name: Installer SwiftLint ${{ inputs.swiftlint-version }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        curl -fsSL -o "$RUNNER_TEMP/swiftlint.zip" \
+          "https://github.com/realm/SwiftLint/releases/download/${{ inputs.swiftlint-version }}/portable_swiftlint.zip"
+        unzip -q "$RUNNER_TEMP/swiftlint.zip" -d "$RUNNER_TEMP/swiftlint"
+        bin="$(find "$RUNNER_TEMP/swiftlint" -type f -name swiftlint | head -1)"
+        test -n "$bin" || { echo "::error::binaire swiftlint introuvable dans l'archive"; exit 1; }
+        chmod +x "$bin"
+        (cd "$(dirname "$bin")" && pwd) >> "$GITHUB_PATH"
+
+    - name: Consigner les versions retenues
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "xcodegen  : $(xcodegen --version)"
+        echo "swiftlint : $(swiftlint --version)"
+        echo "xcodebuild: $(xcodebuild -version | tr '\n' ' ')"

@@ -12,8 +12,12 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      # Même version d'Xcode que build-and-test.yml : sans cette sélection, le
+      # job compilait avec l'Xcode par défaut du runner, qui change avec l'image.
+      - name: Sélectionner Xcode 15
+        run: sudo xcode-select -switch /Applications/Xcode_15.4.app
       - name: Outils
-        run: brew install xcodegen swiftlint
+        uses: ./.github/actions/toolchain
       - name: Lint
         run: swiftlint --strict
       - name: Tests du domaine
