@@ -4,11 +4,35 @@
 contrôle ci-dessous. Ce document fige l’empreinte exacte de l’état validé ;
 toute dérive est détectable en recalculant les sommes md5.
 
-**Méthode de calcul**, pour que l’empreinte globale soit rejouable sans
-ambiguïté : md5 de la concaténation des contenus de fichiers, dans l’ordre
-alphabétique des chemins, tous les `*.swift` du dépôt hors `.build`. La méthode
-a été vérifiée en recalculant l’empreinte de la v1.0, qui retombe exactement sur
-`71dfcd98d41c476318e94b9085a615b1`.
+## Méthode de calcul
+
+md5 de la concaténation des contenus, dans l’ordre alphabétique des chemins,
+de tous les `*.swift` du dépôt hors `.build`.
+
+**Les empreintes portent sur le contenu versionné, donc à fins de ligne LF.**
+Ce n’est pas un détail : sur un poste Windows, `core.autocrlf=true` matérialise
+les fichiers en CRLF, et un recalcul naïf depuis l’arbre de travail renvoie une
+tout autre valeur — `9530133823221b742a0fb41fc8a40352` au lieu de
+`4a70bdd80a03d359d3395ddc5aa8e34d`, à code rigoureusement identique. On
+conclurait à une dérive qui n’existe pas. Le contrôle se fait donc sur le
+contenu Git, jamais sur les octets du disque.
+
+Commande de vérification, indépendante de la plateforme et du réglage
+`autocrlf` puisqu’elle lit les objets Git :
+
+```sh
+git ls-tree -r --name-only HEAD \
+  | grep '\.swift$' | grep -v '^\.build/' | LC_ALL=C sort \
+  | while read -r f; do git show "HEAD:$f"; done | md5sum
+```
+
+Elle doit rendre `4a70bdd80a03d359d3395ddc5aa8e34d` sur la v1.1. Appliquée au
+commit du gel v1.0, elle rend `71dfcd98d41c476318e94b9085a615b1`, valeur
+publiée le 26 juillet : **c’est cette concordance qui valide la méthode**, et
+non l’inverse. Les empreintes par fichier suivent la même règle.
+
+Le décompte de lignes vaut, lui, nombre de `\n` plus un par fichier, les
+fichiers ne se terminant pas tous par un saut de ligne.
 
 ## Empreinte globale
 
