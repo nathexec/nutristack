@@ -60,7 +60,7 @@ struct ScannerView: View {
         }
     }
 
-    private var header: some View {
+    @MainActor private var header: some View {
         HStack {
             Text("Scanner un produit")
                 .font(DSFont.scaled(17, .heavy))
@@ -85,7 +85,7 @@ struct ScannerView: View {
 
     // MARK: Cadre de visée (240 pt fixes, DS §7)
 
-    private var viewfinder: some View {
+    @MainActor private var viewfinder: some View {
         ZStack {
             ViewfinderCorners()
                 .stroke(Color.white.opacity(0.85),
@@ -135,7 +135,7 @@ struct ScannerView: View {
         .padding(.top, DSSpacing.s28)
     }
 
-    private var torchButton: some View {
+    @MainActor private var torchButton: some View {
         Button {
             isTorchOn.toggle()
             engine?.setTorch(isTorchOn)
@@ -153,7 +153,7 @@ struct ScannerView: View {
 
     // MARK: Résultat
 
-    @ViewBuilder private var resultCard: some View {
+    @MainActor @ViewBuilder private var resultCard: some View {
         if let product = foundProduct {
             VStack(spacing: DSSpacing.s14) {
                 HStack(spacing: DSSpacing.s14) {
