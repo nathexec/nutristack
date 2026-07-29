@@ -8,6 +8,7 @@ import SwiftUI
 /// Tout provient de `StackStore`, si bien qu’un produit ajouté depuis une fiche
 /// ou depuis le scanner apparaît ici sans autre intervention. Aucun agrégat
 /// n’est calculé dans la vue.
+@MainActor
 struct StackScreen: View {
     @Environment(AppRouter.self) private var router
     @Environment(StackStore.self) private var stack

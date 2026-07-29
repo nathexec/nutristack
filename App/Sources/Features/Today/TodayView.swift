@@ -8,6 +8,7 @@ import SwiftUI
 ///
 /// L’en-tête ne code aucune date : elle est dérivée du jour de référence du
 /// magasin, si bien que le libellé reste juste quand ce jour change.
+@MainActor
 struct TodayView: View {
     @Environment(AppRouter.self) private var router
     @Environment(TodayStore.self) private var store

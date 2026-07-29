@@ -7,6 +7,7 @@ import UIKit
 /// à dimensions fixes, ligne de balayage, torche, fiche de résultat glissée
 /// depuis le bas. Le fond sombre est l’exception documentée du DS §3
 /// (contexte caméra) ; il reste identique dans les deux modes.
+@MainActor
 struct ScannerView: View {
     @Environment(AppRouter.self) private var router
     @Environment(\.catalogRepository) private var repository
