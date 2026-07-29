@@ -1,5 +1,58 @@
 # Journal des versions · Nutristack (app)
 
+## 0.3.2 · 29 juillet 2026 · première compilation réelle sur macOS
+
+Première exécution du protocole sur un vrai toolchain iOS (runner macOS 14,
+Xcode 15.4). Elle a montré que **rien ne compilait** : 49 erreurs bloquantes, et
+une chaîne d’intégration qui échouait avant même d’y arriver. Les deux sont
+corrigées ; la baseline est refigée en v1.1
+(`docs/Baseline_Gel_v1.0.md` : 58 fichiers inchangés en nombre, 10 modifiés,
+empreinte globale `4a70bdd80a03d359d3395ddc5aa8e34d`).
+
+**Concurrence stricte, 49 erreurs, une seule cause (PR #2).** Le protocole
+`View` impose `@MainActor` à `body`, mais **cette isolation ne se propage à
+aucun autre membre** : une `private var` ou une `private func` voisine reste un
+membre ordinaire d’une `struct` non isolée, et ne peut donc pas lire `AppRouter`,
+`TodayStore` ni `StackStore`. 22 membres étaient dans ce cas, sur 8 fichiers
+(`TodayView`, `StackScreen`, `ScannerView`, `ProductDetailView`, `NutriTabBar`,
+`ExploreView`, `RootView`, `ProfileView`). Correctif : l’annotation `@MainActor`
+explicite, exactement la convention que la baseline appliquait déjà à
+`ScannerView.startScanning`, `ProductDetailView.load` et `ExploreView.reload` —
+ces 22 membres avaient simplement été omis. Risque de régression nul : ce code
+s’exécutait déjà sur le fil principal, l’annotation décrit l’existant.
+Deux erreurs restantes, distinctes : `ScannerEngineFactory.demonstrationCode`
+passe `nonisolated`, une valeur par défaut d’argument étant évaluée chez
+l’appelant et non dans l’acteur ; `CameraScannerEngine` importe AVFoundation en
+`@preconcurrency`, `nonisolated(unsafe)` ne couvrant pas la capture dans les
+fermetures `@Sendable` implicites de `DispatchQueue.async`.
+
+**Rectification d’un décompte.** Le brief de correction annonçait deux erreurs.
+Il y en avait 49, découvertes en trois vagues, le compilateur ne rapportant les
+suivantes qu’une fois les précédentes levées.
+
+**Chaîne d’intégration, huit défauts (PR #3), aucun fichier Swift touché.**
+XcodeGen s’installait en dernière version et produisait un projet au format 77,
+que Xcode 15.4 refuse (`exit code 74`) : épinglé à **2.43.0**, seule version
+mesurée lisible (`objectVersion 54`). L’étape « 34 tests » ne pouvait pas
+fonctionner, `project.yml` ne déclarant aucune cible de test
+(`Scheme Nutristack is not currently configured for the test action`, exit 66) :
+les deux suites passent par `swift test` sur les paquets, avec `--parallel`, sans
+quoi SwiftPM 5.10 n’écrit jamais le rapport `--xunit-output`. L’artefact de
+rapport n’avait donc jamais existé, l’absence de fichier n’étant qu’un
+avertissement : `if-no-files-found: error` ferme la porte. Le workflow ne
+tournait que sur `push: main` et ne protégeait aucune revue : `pull_request`
+ajouté. Destination de simulateur épinglée à `OS=17.5`, faute de quoi xcodebuild
+retenait un runtime arbitraire. `ci.yml` supprimé, il rejouait le lint, la
+génération et la compilation déjà faits ailleurs. SwiftLint épinglé à 0.57.0,
+Xcode sélectionné explicitement, `timeout-minutes` posé sur le job, versions
+d’outils regroupées dans une action composite.
+
+**Statut des tests, désormais sans réserve : 34/34 exécutés, 0 échec** (20
+domaine, 9 formats, 5 composants). Build Debug et Release verts, zéro
+avertissement compilateur (ils sont traités en erreurs), `swiftlint --strict`
+à `0 violations, 0 serious in 55 files`. La réserve « 29/34 » des versions
+0.3.0 et 0.3.1 est close.
+
 ## 0.3.1 · 26 juillet 2026 · gel du code
 Aucune modification de code. Baseline figée par empreinte
 (`docs/Baseline_Gel_v1.0.md` : 58 fichiers, empreinte globale md5, grille de
