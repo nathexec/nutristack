@@ -90,6 +90,11 @@ struct ExploreView: View {
 
     /// Comparaison par défaut de l’action d’en-tête : les deux premiers produits
     /// comparables affichés, jamais une paire codée en dur.
+    ///
+    /// `AppRouter` est `@MainActor` ; en concurrence stricte « targeted », cette
+    /// isolation ne se propage pas automatiquement depuis `View` jusqu’à cette
+    /// méthode privée. Annotation explicite plutôt qu’implicite.
+    @MainActor
     private func openDefaultComparison() {
         guard let group = comparableGroup, group.products.count > 1 else {
             router.show("Sélectionnez une catégorie pour comparer deux produits")
