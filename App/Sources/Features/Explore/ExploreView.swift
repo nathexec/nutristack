@@ -47,7 +47,7 @@ struct ExploreView: View {
         .task(id: "\(searchText)|\(categoryIndex)") { await reload() }
     }
 
-    @ViewBuilder private var results: some View {
+    @MainActor @ViewBuilder private var results: some View {
         let group = comparableGroup
         let topRated = topRatedPicks
         if group == nil && topRated.isEmpty {
@@ -103,7 +103,7 @@ struct ExploreView: View {
         router.openCompare(group.products[0], group.products[1])
     }
 
-    private func section(title: String, meta: String, items: [Product]) -> some View {
+    @MainActor private func section(title: String, meta: String, items: [Product]) -> some View {
         let lastID = items.last?.id
         return Group {
             SectionLabel(title: title, meta: meta)
