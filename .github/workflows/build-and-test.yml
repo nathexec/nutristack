@@ -1,25 +1,45 @@
-# Build + tests réels sur runner macOS hébergé par GitHub (gratuit sur dépôt
-# public ; quota mensuel sur dépôt privé). Couvre les étapes 2 à 8 du
-# protocole de validation finale : résolution, build Debug, build Release,
-# les 34 tests XCTest (dont les 5 tests composants, jusqu'ici BLOCKED),
-# vérification des avertissements, lint.
+# Validation complète sur runner macOS hébergé par GitHub. Couvre les étapes 2
+# à 8 du protocole de validation finale, dans leur ordre : génération,
+# résolution, build Debug, build Release, les 34 tests XCTest, lint strict.
+#
+# Workflow unique. Le dépôt en comptait deux qui rejouaient chacun le lint, la
+# génération du projet et la compilation de l'app sur les mêmes déclencheurs :
+# coût runner et points de panne doublés pour un résultat identique.
+#
+# Il tourne sur les pull requests autant que sur `main` : limité à `push:
+# main`, il ne protégeait aucune revue et ne signalait une régression qu'une
+# fois celle-ci fusionnée.
 name: Build et tests Nutristack
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch: {}
+
+env:
+  # Destination unique pour les étapes xcodebuild. Sans `OS=`, xcodebuild
+  # répond « Using the first of multiple matching destinations » et retient un
+  # runtime arbitraire, qui change avec l'image du runner : on ne validait plus
+  # la cible documentée (iPhone 15 / iOS 17, Protocole_Validation_Finale_v1.0).
+  DESTINATION: platform=iOS Simulator,name=iPhone 15,OS=17.5
 
 jobs:
   build-and-test:
     runs-on: macos-14
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Récupérer le dépôt
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Sélectionner Xcode 15
         run: sudo xcode-select -switch /Applications/Xcode_15.4.app
+
+      # Trace les runtimes réellement installés sous cet Xcode. La destination
+      # ci-dessus épingle une version d'iOS ; si l'image du runner cesse de la
+      # fournir, ce journal donne la réponse sans nouvelle enquête.
+      - name: Inventorier les simulateurs disponibles
+        run: xcrun simctl list runtimes
 
       - name: Vérifier les 5 polices
         run: |
@@ -29,39 +49,68 @@ jobs:
           done
           echo "5 polices présentes"
 
-      - name: Installer xcodegen et swiftlint
-        run: brew install xcodegen swiftlint
+      - name: Installer l'outillage épinglé
+        uses: ./.github/actions/toolchain
 
+      # Le protocole de validation désigne `./scripts/bootstrap.sh`, qui est un
+      # script de poste de travail : il se termine par `open Nutristack.xcodeproj`,
+      # sans objet sur un runner sans session graphique. On appelle donc
+      # directement la seule commande utile en CI, celle que bootstrap.sh exécute.
       - name: Générer le projet (étape 2)
-        run: ./scripts/bootstrap.sh
+        run: xcodegen generate
 
       - name: Résoudre les dépendances (étape 3)
         run: xcodebuild -resolvePackageDependencies -project Nutristack.xcodeproj
 
-      - name: Lint strict
+      - name: Lint strict (étape 8)
         run: swiftlint --strict
 
       - name: Build Debug, cible complète (étape 4)
         run: |
           xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack \
-            -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -configuration Debug -destination "$DESTINATION" \
             | xcpretty && exit ${PIPESTATUS[0]}
 
       - name: Build Release, cible complète (étape 5)
         run: |
           xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack \
-            -configuration Release -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -configuration Release -destination "$DESTINATION" \
             | xcpretty && exit ${PIPESTATUS[0]}
 
-      - name: Exécuter les 34 tests XCTest (étapes 6 et 7)
-        run: |
-          xcodebuild test -project Nutristack.xcodeproj -scheme Nutristack \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
-            | xcpretty --test && exit ${PIPESTATUS[0]}
+      # Les 34 tests vivent dans les deux paquets SPM ; `project.yml` ne déclare
+      # qu'une cible application, sans cible de test. `xcodebuild test` sur le
+      # schéma Nutristack ne peut donc pas fonctionner — il répond « Scheme
+      # Nutristack is not currently configured for the test action » — et
+      # `swift test` est de toute façon plus rapide qu'un simulateur.
+      - name: Préparer le dossier de rapports
+        run: mkdir -p build/reports
 
-      - name: Publier le journal de tests
-        if: always()
-        uses: actions/upload-artifact@v4
+      # `--parallel` n'est pas un réglage de vitesse : sous SwiftPM 5.10,
+      # `--xunit-output` n'écrit son rapport que depuis l'exécuteur parallèle.
+      # Sans lui, les tests passent, aucun fichier n'est produit, et la
+      # publication d'artefact retombe dans le défaut qu'elle devait clore.
+      - name: Tests du domaine, 20 tests (étapes 6 et 7)
+        id: tests-domaine
+        run: |
+          swift test --package-path Packages/NutristackDomain --parallel \
+            --xunit-output "$GITHUB_WORKSPACE/build/reports/domaine.xml"
+
+      - name: Tests du design system, 14 tests (étapes 6 et 7)
+        run: |
+          swift test --package-path Packages/NutristackDesignSystem --parallel \
+            --xunit-output "$GITHUB_WORKSPACE/build/reports/design-system.xml"
+
+      # `always()` est indispensable : une condition `if` sans fonction de
+      # statut se voit implicitement combinée à `success()`, et la publication
+      # était alors sautée précisément quand le rapport importe le plus, sur
+      # échec. Le garde sur `skipped` évite l'inverse, échouer faute de rapport
+      # quand une étape amont s'est arrêtée avant que les tests ne tournent.
+      # `if-no-files-found: error` interdit le retour du défaut d'origine : un
+      # chemin inexistant publié en silence sous un simple avertissement.
+      - name: Publier le rapport de tests
+        if: always() && steps.tests-domaine.conclusion != 'skipped'
+        uses: actions/upload-artifact@v5
         with:
           name: resultats-tests
           path: build/reports
+          if-no-files-found: error
