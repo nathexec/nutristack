@@ -1,5 +1,33 @@
 # Journal des versions · Nutristack (app)
 
+## 0.3.3 · 3 août 2026 · retrait de l’intégration continue
+
+**Décision du mainteneur, prise en connaissance des conséquences.** Le workflow
+`.github/workflows/build-and-test.yml` est supprimé et les 42 exécutions
+enregistrées sur GitHub Actions sont effacées : les 23 de « Build et tests
+Nutristack », les 13 de l’ancienne « CI » dont le fichier avait déjà disparu, et
+les 6 des deux entrées créées par Copilot sur la PR #1. Une entrée de workflow
+ne peut pas être supprimée directement — elle ne quitte l’onglet Actions qu’une
+fois son dernier run effacé — d’où la purge complète.
+
+**Ce que le dépôt perd.** Plus aucune vérification automatique sur les pull
+requests : ni génération du projet, ni lint strict, ni build Debug ou Release,
+ni exécution des 34 tests. La porte M1 « zéro avertissement » n’est plus tenue
+que par la discipline de qui pousse le code.
+
+**Preuve perdue.** Le run `30464623275` attestait sur `946ee34` — le commit que
+porte la balise `v0.3.2` — build Debug et Release au vert, 0 avertissement,
+`swiftlint --strict` 0 violation sur 55 fichiers, 34 tests sans échec. Il est
+effacé avec les autres. Le message de la balise et l’entrée 0.3.2 ci-dessous
+continuent d’énoncer ces chiffres ; plus aucun journal ne les corrobore. Ils
+restent rejouables à la main par la séquence donnée au README §Qualité.
+
+**Récupération.** Le fichier du workflow est restaurable depuis l’historique
+git : `git show 946ee34:.github/workflows/build-and-test.yml`. Les runs, non :
+la suppression est définitive côté GitHub. `.github/actions/toolchain` est
+conservé pour son raisonnement sur les versions épinglées, bien qu’il n’ait
+plus d’appelant.
+
 ## 0.3.2 · 29 juillet 2026 · première compilation réelle sur macOS
 
 Première exécution du protocole sur un vrai toolchain iOS (runner macOS 14,
