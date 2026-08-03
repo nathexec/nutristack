@@ -1,5 +1,19 @@
 # Journal des versions · Nutristack (app)
 
+## 0.3.4 · 3 août 2026 · réarmement de l’intégration continue
+
+Le workflow retiré à l’entrée précédente est restauré **à l’identique** depuis
+`946ee34`, sans une ligne d’écart : c’est la version dont les 17 étapes ont été
+mesurées vertes. En réécrire une neuve aurait rouvert un risque déjà fermé.
+README §Qualité reprend son état d’origine, la CI existant de nouveau.
+
+L’onglet Actions repart de zéro. Les 42 exécutions purgées ne reviennent pas :
+l’historique visible commence à la première exécution de ce commit. Le code
+Swift est inchangé depuis `946ee34` — seuls `.github/`, `README.md` et ce
+journal ont bougé — de sorte qu’une exécution verte ici rétablit la preuve
+perdue à l’entrée 0.3.3 sur exactement la même baseline, par mesure et non par
+récupération.
+
 ## 0.3.3 · 3 août 2026 · retrait de l’intégration continue
 
 **Décision du mainteneur, prise en connaissance des conséquences.** Le workflow

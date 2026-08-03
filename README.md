@@ -107,30 +107,13 @@ un recouvrement plein écran retire l’arrière-plan de l’arbre d’accessibi
 
 `swiftlint --strict` et SwiftFormat avec configurations versionnées.
 
-**Aucune intégration continue.** Le workflow GitHub Actions a été retiré le
-3 août 2026, avec l’historique complet de ses exécutions. Plus rien ne vérifie
-automatiquement une pull request : la validation est manuelle et repose
-entièrement sur qui pousse le code.
-
-Séquence à rejouer avant toute fusion, sur macOS avec Xcode 15.x et
-XcodeGen 2.43.0 — les versions et le raisonnement qui les fixe sont conservés
-dans `.github/actions/toolchain`, désormais sans appelant :
-
-```bash
-xcodegen generate
-xcodebuild -resolvePackageDependencies -project Nutristack.xcodeproj
-swiftlint --strict
-xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack \
-  -configuration Debug   -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5'
-xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack \
-  -configuration Release -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5'
-swift test --package-path Packages/NutristackDomain
-swift test --package-path Packages/NutristackDesignSystem
-```
-
-Attendu : 0 violation SwiftLint, 0 avertissement, 34 tests au vert (20 domaine,
-14 design system). `⌘U` ne fonctionne pas — `project.yml` ne déclare aucune
-cible de test, XcodeGen n’en générant pas pour les paquets locaux.
+**Intégration continue** : un seul workflow,
+`.github/workflows/build-and-test.yml`, sur `main` et sur chaque pull request.
+Il enchaîne génération du projet, résolution SPM, lint strict, build Debug,
+build Release, puis les 34 tests par `swift test` sur les deux paquets — il
+n’existe aucune cible de test Xcode, XcodeGen n’en générant pas pour les
+paquets locaux — et publie le rapport xUnit en artefact. Les versions d’outils
+sont épinglées dans `.github/actions/toolchain`.
 
 Porte M1 : zéro avertissement, garanti par `SWIFT_TREAT_WARNINGS_AS_ERRORS`,
 donc un build vert vaut panneau Issues vide.
