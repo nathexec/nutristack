@@ -1,5 +1,37 @@
 # Journal des versions · Nutristack (app)
 
+## 0.3.5 · 3 août 2026 · noms d’étapes et garde-fous du workflow
+
+**Nommage.** Les étapes suivent désormais une seule forme : un verbe à
+l’infinitif suivi de son complément. Trois défauts sont levés. Les numéros du
+protocole apparaissaient dans le désordre — « Contrôler le style » est l’étape 8
+et s’exécute avant les étapes 4 et 5, parce qu’il échoue en 3 secondes là où un
+build en prend 24 : la liste se lisait comme un bug alors que l’ordre est
+délibéré. La correspondance passe dans l’en-tête du fichier, donnée une fois.
+Les décomptes figés disparaissent : « Tests du domaine, 20 tests » affirmait un
+chiffre qu’aucune étape ne vérifiait et qui serait devenu faux en silence au
+premier test ajouté ; le compte réel est dans le rapport xUnit. Les formes
+grammaticales sont unifiées, la liste mêlant infinitifs et groupes nominaux
+(« Build Debug », « Lint strict »).
+
+**Aucun changement de comportement.** Commandes, actions et arguments sont
+identiques au caractère près, vérifié par comparaison des lignes `run:` et
+`uses:` avant et après. `id: tests-domaine` est préservé, la condition de
+publication de l’artefact s’y référant.
+
+**Deux garde-fous ajoutés.** `permissions: contents: read` applique le moindre
+privilège au jeton du workflow, qui ne fait que lire. `concurrency` annule une
+exécution de pull request rendue obsolète par une poussée ultérieure, mais
+jamais sur `main` : une exécution sur `main` est un enregistrement.
+
+**Le fichier n’est pas renommé.** Une entrée de l’onglet Actions est identifiée
+par le chemin du workflow ; le renommer créerait une entrée neuve et laisserait
+l’ancienne en fantôme avec ses exécutions — exactement le résidu purgé à
+l’entrée 0.3.3. Le nom affiché passe en revanche de « Build et tests
+Nutristack » à « Intégration continue », et le job de la clé `build-and-test`
+au libellé « Vérification complète » ; ni protection de branche ni ruleset ne
+référençait l’ancien nom, vérifié avant la bascule.
+
 ## 0.3.4 · 3 août 2026 · réarmement de l’intégration continue
 
 Le workflow retiré à l’entrée précédente est restauré **à l’identique** depuis

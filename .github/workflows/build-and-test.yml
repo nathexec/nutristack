@@ -1,15 +1,41 @@
-# Validation complète sur runner macOS hébergé par GitHub. Couvre les étapes 2
-# à 8 du protocole de validation finale, dans leur ordre : génération,
-# résolution, build Debug, build Release, les 34 tests XCTest, lint strict.
+# Vérification complète sur runner macOS hébergé par GitHub.
 #
 # Workflow unique. Le dépôt en comptait deux qui rejouaient chacun le lint, la
 # génération du projet et la compilation de l'app sur les mêmes déclencheurs :
 # coût runner et points de panne doublés pour un résultat identique.
 #
-# Il tourne sur les pull requests autant que sur `main` : limité à `push:
-# main`, il ne protégeait aucune revue et ne signalait une régression qu'une
-# fois celle-ci fusionnée.
-name: Build et tests Nutristack
+# Il tourne sur les pull requests autant que sur `main` : limité à `push: main`,
+# il ne protégeait aucune revue et ne signalait une régression qu'une fois
+# celle-ci fusionnée.
+#
+# Le nom du fichier ne change pas. Une entrée de l'onglet Actions est identifiée
+# par le chemin du workflow : renommer le fichier créerait une entrée neuve et
+# laisserait l'ancienne en fantôme, avec ses exécutions. Le dépôt a déjà payé
+# ce prix une fois (entrée `CI`, purgée le 3 août 2026).
+#
+# ---------------------------------------------------------------------------
+# Convention de nommage des étapes
+#
+#   Un verbe à l'infinitif, puis son complément. Rien d'autre.
+#
+#   Aucun décompte dans un nom. « Tests du domaine, 20 tests » affirmait un
+#   chiffre que l'étape ne vérifiait pas et qui serait devenu faux en silence au
+#   premier test ajouté. Le compte réel est publié dans le rapport xUnit.
+#
+#   Aucun numéro d'étape du protocole. L'ordre d'exécution en CI n'est pas celui
+#   du protocole — le contrôle de style (étape 8) précède les compilations
+#   (étapes 4 et 5) parce qu'il échoue en 3 secondes là où un build en prend 24 —
+#   et la liste se lisait donc dans un désordre apparent. La correspondance avec
+#   docs/Protocole_Validation_Finale_v1.0.md est donnée ici, une fois :
+#
+#     étape 2         Générer le projet Xcode
+#     étape 3         Résoudre les dépendances SwiftPM
+#     étape 4         Compiler en Debug
+#     étape 5         Compiler en Release
+#     étapes 6 et 7   Tester le domaine · Tester le design system
+#     étape 8         Contrôler le style
+# ---------------------------------------------------------------------------
+name: Intégration continue
 
 on:
   push:
@@ -17,67 +43,85 @@ on:
   pull_request:
   workflow_dispatch: {}
 
+# Moindre privilège : ce workflow ne fait que lire le dépôt. La publication
+# d'artefact passe par le jeton d'exécution et n'exige rien de plus.
+permissions:
+  contents: read
+
+# Une poussée qui en remplace une autre sur la même pull request annule la
+# précédente. Jamais sur `main` : une exécution sur `main` est un enregistrement,
+# elle ne doit pas disparaître parce qu'un commit l'a suivie.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
-  # Destination unique pour les étapes xcodebuild. Sans `OS=`, xcodebuild
-  # répond « Using the first of multiple matching destinations » et retient un
-  # runtime arbitraire, qui change avec l'image du runner : on ne validait plus
-  # la cible documentée (iPhone 15 / iOS 17, Protocole_Validation_Finale_v1.0).
+  # Destination unique pour les étapes xcodebuild. Sans `OS=`, xcodebuild retient
+  # un runtime arbitraire, qui change avec l'image du runner : on ne validait
+  # plus la cible documentée (iPhone 15 / iOS 17). L'avertissement « Using the
+  # first of multiple matching destinations » subsiste au journal, mais les deux
+  # candidats sont alors le même simulateur, même UDID : il est sans effet.
   DESTINATION: platform=iOS Simulator,name=iPhone 15,OS=17.5
 
 jobs:
-  build-and-test:
+  verification:
+    name: Vérification complète
     runs-on: macos-14
     timeout-minutes: 45
     steps:
       - name: Récupérer le dépôt
         uses: actions/checkout@v5
 
-      - name: Sélectionner Xcode 15
+      - name: Sélectionner Xcode 15.4
         run: sudo xcode-select -switch /Applications/Xcode_15.4.app
 
-      # Trace les runtimes réellement installés sous cet Xcode. La destination
-      # ci-dessus épingle une version d'iOS ; si l'image du runner cesse de la
-      # fournir, ce journal donne la réponse sans nouvelle enquête.
-      - name: Inventorier les simulateurs disponibles
+      # Trace les runtimes réellement installés sous cet Xcode. `DESTINATION`
+      # épingle une version d'iOS ; si l'image du runner cesse de la fournir, ce
+      # journal donne la réponse sans nouvelle enquête.
+      - name: Inventorier les runtimes de simulateur
         run: xcrun simctl list runtimes
 
-      - name: Vérifier les 5 polices
+      # Les cinq graisses que `DSTextStyle` emploie réellement. `DSFontRegistrar`
+      # enregistre tout `.ttf` du dossier : une police absente ne casse rien au
+      # build, l'app bascule en silence sur la police système et le rendu
+      # contractuel est perdu sans qu'aucune étape ne le signale.
+      - name: Vérifier les polices embarquées
         run: |
           DIR="Packages/NutristackDesignSystem/Sources/NutristackDesignSystem/Resources/Fonts"
           for name in Regular Medium SemiBold Bold ExtraBold; do
             test -f "$DIR/SchibstedGrotesk-$name.ttf" || { echo "::error::police manquante : $name"; exit 1; }
           done
-          echo "5 polices présentes"
+          echo "polices requises présentes"
 
       - name: Installer l'outillage épinglé
         uses: ./.github/actions/toolchain
 
-      # Le protocole de validation désigne `./scripts/bootstrap.sh`, qui est un
-      # script de poste de travail : il se termine par `open Nutristack.xcodeproj`,
-      # sans objet sur un runner sans session graphique. On appelle donc
-      # directement la seule commande utile en CI, celle que bootstrap.sh exécute.
-      - name: Générer le projet (étape 2)
+      # Le protocole désigne `./scripts/bootstrap.sh`, qui est un script de poste
+      # de travail : il se termine par `open Nutristack.xcodeproj`, sans objet sur
+      # un runner sans session graphique. On appelle donc directement la seule
+      # commande utile en CI, celle que bootstrap.sh exécute.
+      - name: Générer le projet Xcode
         run: xcodegen generate
 
-      - name: Résoudre les dépendances (étape 3)
+      - name: Résoudre les dépendances SwiftPM
         run: xcodebuild -resolvePackageDependencies -project Nutristack.xcodeproj
 
-      - name: Lint strict (étape 8)
+      - name: Contrôler le style
         run: swiftlint --strict
 
-      - name: Build Debug, cible complète (étape 4)
+      - name: Compiler en Debug
         run: |
           xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack \
             -configuration Debug -destination "$DESTINATION" \
             | xcpretty && exit ${PIPESTATUS[0]}
 
-      - name: Build Release, cible complète (étape 5)
+      - name: Compiler en Release
         run: |
           xcodebuild build -project Nutristack.xcodeproj -scheme Nutristack \
             -configuration Release -destination "$DESTINATION" \
             | xcpretty && exit ${PIPESTATUS[0]}
 
-      # Les 34 tests vivent dans les deux paquets SPM ; `project.yml` ne déclare
+      # Les tests vivent dans les deux paquets SPM ; `project.yml` ne déclare
       # qu'une cible application, sans cible de test. `xcodebuild test` sur le
       # schéma Nutristack ne peut donc pas fonctionner — il répond « Scheme
       # Nutristack is not currently configured for the test action » — et
@@ -89,22 +133,22 @@ jobs:
       # `--xunit-output` n'écrit son rapport que depuis l'exécuteur parallèle.
       # Sans lui, les tests passent, aucun fichier n'est produit, et la
       # publication d'artefact retombe dans le défaut qu'elle devait clore.
-      - name: Tests du domaine, 20 tests (étapes 6 et 7)
+      - name: Tester le domaine
         id: tests-domaine
         run: |
           swift test --package-path Packages/NutristackDomain --parallel \
             --xunit-output "$GITHUB_WORKSPACE/build/reports/domaine.xml"
 
-      - name: Tests du design system, 14 tests (étapes 6 et 7)
+      - name: Tester le design system
         run: |
           swift test --package-path Packages/NutristackDesignSystem --parallel \
             --xunit-output "$GITHUB_WORKSPACE/build/reports/design-system.xml"
 
-      # `always()` est indispensable : une condition `if` sans fonction de
-      # statut se voit implicitement combinée à `success()`, et la publication
-      # était alors sautée précisément quand le rapport importe le plus, sur
-      # échec. Le garde sur `skipped` évite l'inverse, échouer faute de rapport
-      # quand une étape amont s'est arrêtée avant que les tests ne tournent.
+      # `always()` est indispensable : une condition `if` sans fonction de statut
+      # se voit implicitement combinée à `success()`, et la publication était
+      # alors sautée précisément quand le rapport importe le plus, sur échec. Le
+      # garde sur `skipped` évite l'inverse, échouer faute de rapport quand une
+      # étape amont s'est arrêtée avant que les tests ne tournent.
       # `if-no-files-found: error` interdit le retour du défaut d'origine : un
       # chemin inexistant publié en silence sous un simple avertissement.
       - name: Publier le rapport de tests
