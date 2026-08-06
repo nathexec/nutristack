@@ -19,11 +19,11 @@
 #   - SwiftLint est exécuté avec `--strict`, qui promeut tout avertissement en
 #     erreur. Chaque nouvelle règle d'une version ultérieure est donc un échec
 #     de CI en puissance. 0.57.0 est la version sous laquelle la baseline v1.0
-#     a été validée (docs/Validation_Xcode_Nutristack_v1.0.md).
+#     a été validée (docs/validation/Validation_Xcode_v1.0.md).
 #
 # Le choix de rester sur Xcode 15.x n'est pas un retard subi mais une décision
-# du projet : docs/Protocole_Validation_Finale_v1.0.md §matériel requis, et
-# docs/Icone_Nutristack_v1.1.md (les variantes d'icône sombre et teintée ne sont
+# du projet : docs/validation/Protocole_Validation_Finale_v1.0.md §matériel requis, et
+# docs/icon/Icone_v1.1.md (les variantes d'icône sombre et teintée ne sont
 # volontairement pas déclarées, elles exigeraient Xcode 16).
 name: Outillage Nutristack
 description: Installe XcodeGen et SwiftLint à des versions épinglées et reproductibles.

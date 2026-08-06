@@ -90,8 +90,12 @@ Elles ne sont **pas** déclarées dans le catalogue d’assets : les emplacement
 
 `docs/icon/build_icon.py` produit l’ensemble depuis les paramètres des §3 à §5 : les trois SVG maîtres, les trois exports de 1024 et la planche de contrôle. Le script rasterise le SVG plutôt que de redessiner en bitmap, ce qui garantit que la source vectorielle et le fichier livré ne peuvent pas diverger. Il aplatit ensuite le canal alpha, l’App Store refusant la transparence.
 
+Les fichiers sont écrits sur place, dans `docs/icon/`. Seul l’export clair de
+1024 n’y est pas versionné : sa copie de production vit dans le catalogue
+d’assets (chemin en en-tête) et le doublon est ignoré par `.gitignore`.
+
 ```bash
-pip install cairosvg
+pip install cairosvg pillow numpy
 python3 docs/icon/build_icon.py
 ```
 

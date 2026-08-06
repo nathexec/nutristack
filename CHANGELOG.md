@@ -1,9 +1,40 @@
 # Journal des versions · Nutristack (app)
 
+## 0.3.7 · 6 août 2026 · la documentation est rangée et son nommage unifié
+
+Aucune modification de code Swift.
+
+**Publication du compte rendu d’audit.** Le bilan consolidé des deux vagues
+d’audit multi-agents est livré : 17 points ouverts dont 3 majeurs, 79 points
+sains, 42 constats écartés avec motifs, 12 clos. Désormais dans
+`docs/audit/Compte_Rendu_Audit_v1.0.md`.
+
+**Rangement de `docs/`.** Les huit documents en vrac rejoignent quatre dossiers
+thématiques — `audit/`, `baseline/`, `icon/`, `validation/`, en anglais et en
+minuscules comme les autres dossiers du dépôt — sur le modèle du dossier
+d’icône. Un index `docs/README.md` énonce la convention de nommage ;
+le suffixe redondant `_Nutristack` disparaît de trois noms de fichiers
+(`Audit_Code`, `Icone`, `Validation_Xcode`) qui l’avaient quand cinq autres ne
+l’avaient pas. Toutes les références croisées — README, journal, chaîne
+d’intégration, protocole, documents entre eux — sont mises à jour.
+
+**Deux défauts réels corrigés dans l’outillage d’icône.** `build_icon.py`
+écrivait dans `/home/claude/icon/out`, chemin absolu de la machine où il a été
+écrit : la commande de régénération documentée ne pouvait donc pas reproduire
+les assets dans le dépôt (sur macOS, `/home` n’est même pas inscriptible). Il
+écrit désormais à côté de lui, sur place. Et il produit
+`Nutristack_AppIcon_default.svg` là où le dépôt suivait `Nutristack_AppIcon.svg`
+sans suffixe : une régénération aurait créé un doublon en orphelinant le fichier
+suivi. Le nom versionné est aligné sur la sortie du script. Accessoirement, la
+commande d’installation documentée ne citait que `cairosvg` alors que le script
+importe aussi `pillow` et `numpy` ; l’export clair de 1024, dont la copie de
+production vit dans le catalogue d’assets, est explicitement ignoré par
+`.gitignore`.
+
 ## 0.3.6 · 6 août 2026 · le chemin d’installation documenté ne bloque plus la validation
 
-**Défaut principal.** `scripts/bootstrap.sh`, `docs/Protocole_Validation_Finale_v1.0.md`
-et `docs/Validation_Xcode_Nutristack_v1.0.md` prescrivaient tous trois
+**Défaut principal.** `scripts/bootstrap.sh`, `docs/validation/Protocole_Validation_Finale_v1.0.md`
+et `docs/validation/Validation_Xcode_v1.0.md` prescrivaient tous trois
 `brew install xcodegen`. Le dépôt documente pourtant ailleurs — `README.md`,
 `.github/actions/toolchain/action.yml` — que Homebrew pose la version courante,
 et qu’à partir de 2.44.0 XcodeGen écrit un `objectVersion` (70, puis 77) que
@@ -111,7 +142,7 @@ Première exécution du protocole sur un vrai toolchain iOS (runner macOS 14,
 Xcode 15.4). Elle a montré que **rien ne compilait** : 49 erreurs bloquantes, et
 une chaîne d’intégration qui échouait avant même d’y arriver. Les deux sont
 corrigées ; la baseline est refigée en v1.1
-(`docs/Baseline_Gel_v1.0.md` : 58 fichiers inchangés en nombre, 10 modifiés,
+(`docs/baseline/Baseline_Gel_v1.0.md` : 58 fichiers inchangés en nombre, 10 modifiés,
 empreinte globale `4a70bdd80a03d359d3395ddc5aa8e34d`).
 
 **Concurrence stricte, 49 erreurs, une seule cause (PR #2).** Le protocole
@@ -173,9 +204,9 @@ avertissement compilateur (ils sont traités en erreurs), `swiftlint --strict`
 
 ## 0.3.1 · 26 juillet 2026 · gel du code
 Aucune modification de code. Baseline figée par empreinte
-(`docs/Baseline_Gel_v1.0.md` : 58 fichiers, empreinte globale md5, grille de
+(`docs/baseline/Baseline_Gel_v1.0.md` : 58 fichiers, empreinte globale md5, grille de
 contrôle obligatoire avant tout changement) et publication du protocole de
-validation finale (`docs/Protocole_Validation_Finale_v1.0.md` : 22 étapes,
+validation finale (`docs/validation/Protocole_Validation_Finale_v1.0.md` : 22 étapes,
 chacune avec procédure, attendu, critères PASS et FAIL, définition de la
 régression et action corrective). Statut contractuel des tests : 29/34
 exécutés réellement et PASS, 5/34 BLOCKED jusqu’à l’exécution des tests de
@@ -201,7 +232,7 @@ un 8ᵉ trouvé par cette passe : un `await` superflu dans le partage, qui aurai
 fait échouer le build (avertissements en erreurs). Test ajouté sur le format de
 provenance « 12 juil. 2026 » (34 cas). Rectification d’un décompte : 7
 corrections et 2 consignations, non 8 et 1. Livrable :
-`docs/Validation_Xcode_Nutristack_v1.0.md`, registre des 5 arbitrages avec
+`docs/validation/Validation_Xcode_v1.0.md`, registre des 5 arbitrages avec
 recommandations (dont 53,70 € canonique de fait, amendement PRD proposé),
 correspondance des 34 tests aux exigences, 7 risques de compilation classés,
 liste exacte des 5 polices, checklist Xcode en 22 étapes avec critères
@@ -215,7 +246,7 @@ d’Aujourd’hui manquait, le vainqueur du comparateur n’était signalé que 
 la couleur, un code-barres inconnu déclenchait un toast par image caméra, la
 cascade et les masses décimales du comparateur. Matrice de traçabilité PRD →
 code → tests établie, 39 assertions recalculées hors Swift. Rapport complet :
-`docs/Audit_Final_Production_v1.0.md`. Verdict : prêt sous réserve, la réserve
+`docs/audit/Audit_Final_Production_v1.0.md`. Verdict : prêt sous réserve, la réserve
 première restant la compilation, impossible dans cet environnement.
 
 ## 0.2.2 · 25 juillet 2026 · homogénéité et coût de calcul
@@ -306,7 +337,7 @@ l’introduction des conditionnements.
 **Icône d’application.** La jauge d’actif empilée trois fois, ses remplissages
 reprenant les fractions élémentaires réelles du catalogue. Source vectorielle,
 variantes sombre et teintée, planche de contrôle et script de régénération dans
-`docs/icon/` ; parti pris et géométrie dans `docs/Icone_Nutristack_v1.1.md`.
+`docs/icon/` ; parti pris et géométrie dans `docs/icon/Icone_v1.1.md`.
 
 **La stack devient un état partagé.** Nouveau `StackStore`, source de vérité de
 la composition, des coûts et des prévisions de rachat. `TodayStore` en dérive au
@@ -337,7 +368,7 @@ deux produits qui s’épuisent le même jour pouvaient permuter d’un appel à
 l’autre ; le rang d’origine sert désormais de second critère.
 
 ## 0.1.2 · 25 juillet 2026 · audit de verrouillage
-Second audit avant gel de la v1.0 (voir `docs/Audit_Verrouillage_v1.0.md`).
+Second audit avant gel de la v1.0 (voir `docs/audit/Audit_Verrouillage_v1.0.md`).
 
 **Compilation.** Une erreur résiduelle de la passe précédente corrigée : le test
 d’analyse hexadécimale utilisait encore les anciennes étiquettes de tuple
@@ -357,7 +388,7 @@ dans `Config/Base.xcconfig`.
 conventions de projet consignées dans le README, dette connue explicitée.
 
 ## 0.1.1 · 25 juillet 2026 · suite de l’audit interne
-Correctifs issus de l’audit en profondeur (voir `Audit_Code_Nutristack_v1.0.md`) :
+Correctifs issus de l’audit en profondeur (voir `docs/audit/Audit_Code_v1.0.md`) :
 
 **Compilation.** Trois défauts bloquants levés : initialiseur de couleur du
 Design System rendu public via des tokens nommés pour le scanner, chemins de clé

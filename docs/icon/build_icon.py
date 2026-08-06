@@ -208,7 +208,7 @@ def contact_sheet(source: Image.Image, out: pathlib.Path) -> None:
 
 
 if __name__ == '__main__':
-    root = pathlib.Path('/home/claude/icon/out')
+    root = pathlib.Path(__file__).resolve().parent
     root.mkdir(parents=True, exist_ok=True)
     for name in VARIANTS:
         (root / f'Nutristack_AppIcon_{name}.svg').write_text(svg(name), encoding='utf-8')

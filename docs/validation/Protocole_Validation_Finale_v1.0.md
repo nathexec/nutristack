@@ -1,13 +1,13 @@
 # Protocole de validation finale · Xcode et appareil réel · Nutristack v1.0
 
-**Date** 26 juillet 2026 · **Préalable** code gelé (empreinte : `docs/Baseline_Gel_v1.0.md`) · **Objectif** prouver que le code actuel fonctionne comme prévu, pas l’améliorer.
+**Date** 26 juillet 2026 · **Préalable** code gelé (empreinte : `docs/baseline/Baseline_Gel_v1.0.md`) · **Objectif** prouver que le code actuel fonctionne comme prévu, pas l’améliorer.
 
 **Statut des tests à l’entrée du protocole** : 20/20 domaine exécutés réellement, PASS · 9/9 formats exécutés réellement, PASS · 5/5 composants NON EXÉCUTÉS, BLOCKED (SDK SwiftUI/iOS absent de l’environnement de préparation) · total 29/34 exécutés avec succès, 5/34 restent à exécuter. Les 34 ne seront déclarés validés qu’après l’étape 6.
 
 > **Addendum du 29 juillet 2026 — les étapes 2 à 8 sont PASS.** Le texte
 > ci-dessus décrit l’état d’entrée du 26 juillet et n’est pas réécrit : c’est un
 > état daté, pas un état courant. Ce qui a changé depuis figure au CHANGELOG
-> 0.3.2 et dans `docs/Baseline_Gel_v1.0.md`, refigé en v1.1.
+> 0.3.2 et dans `docs/baseline/Baseline_Gel_v1.0.md`, refigé en v1.1.
 >
 > Les étapes 2 à 8 ont été exécutées sur runner macOS 14 / Xcode 15.4 plutôt
 > que sur un Mac de poste, et sont automatisées par

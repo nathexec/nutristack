@@ -26,7 +26,7 @@
 #   du protocole — le contrôle de style (étape 8) précède les compilations
 #   (étapes 4 et 5) parce qu'il échoue en 3 secondes là où un build en prend 24 —
 #   et la liste se lisait donc dans un désordre apparent. La correspondance avec
-#   docs/Protocole_Validation_Finale_v1.0.md est donnée ici, une fois :
+#   docs/validation/Protocole_Validation_Finale_v1.0.md est donnée ici, une fois :
 #
 #     étape 2         Générer le projet Xcode
 #     étape 3         Résoudre les dépendances SwiftPM

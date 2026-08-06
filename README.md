@@ -70,7 +70,7 @@ L’icône d’application est la jauge d’actif empilée trois fois, ses rempl
 reprenant les fractions élémentaires réelles du catalogue. Source vectorielle,
 variantes sombre et teintée, planche de contrôle des tailles et script de
 régénération dans `docs/icon/` ; le parti pris et la géométrie sont documentés
-dans `docs/Icone_Nutristack_v1.1.md`. Les deux teintes de fond dérivées du vert
+dans `docs/icon/Icone_v1.1.md`. Les deux teintes de fond dérivées du vert
 officinal restent à verser au Design System par amendement.
 
 ## Conventions de code

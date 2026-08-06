@@ -1,5 +1,6 @@
 .DS_Store
 .build/
+__pycache__/
 DerivedData/
 xcuserdata/
 *.xcodeproj
@@ -7,3 +8,7 @@ xcuserdata/
 
 # Généré par XcodeGen
 Config/Info.plist
+
+# Généré par docs/icon/build_icon.py — la copie de production de cet export
+# vit dans App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+docs/icon/Nutristack_AppIcon_1024.png

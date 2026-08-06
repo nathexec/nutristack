@@ -79,7 +79,7 @@ trouvailles. Résultat : 7 constats retenus, 19 rejetés, 10 constats de complé
   2.43.0 de yonaskolb/XcodeGen, `portable_swiftlint.zip` sur la 0.57.0 de
   realm/SwiftLint. La procédure d'installation documentée n'est pas creuse.
 - **Baseline** : l'empreinte globale `4a70bdd80a03d359d3395ddc5aa8e34d`
-  (docs/Baseline_Gel_v1.0.md:43) a été rejouée depuis ce poste : exacte. Les 58
+  (docs/baseline/Baseline_Gel_v1.0.md:43) a été rejouée depuis ce poste : exacte. Les 58
   empreintes par fichier ont été recalculées une à une en vague 1 : les 58 concordent.
 
 ### 3.2 Les neuf points sains du protocole (critique de complétude, vague 2)
@@ -287,7 +287,7 @@ tests est une opération normale, datée et documentée, pas une violation du ge
 **O-8 · Le gel n'est vérifié par aucune automatisation** — avancement, réfut. 0/3,
 re-confirmé en vague 2. La CI passe au vert sur un fichier Swift modifié : le
 mécanisme central du projet repose sur la seule discipline humaine, alors que la
-commande de contrôle est déjà écrite et déterministe (Baseline_Gel_v1.0.md:24-27).
+commande de contrôle est déjà écrite et déterministe (docs/baseline/Baseline_Gel_v1.0.md:24-27).
 **Correction** : une étape de workflow qui rejoue la commande et compare à
 `4a70bdd80a03d359d3395ddc5aa8e34d`.
 
@@ -345,7 +345,7 @@ Base.xcconfig:8-10 est factuellement fausse. **Correction** : rectifier la phras
 décrire l'existant. Docs seulement.
 
 **O-17 · La documentation d'isolation nomme une méthode qui n'existe pas** —
-concurrence (vague 1), réfut. 1/3. docs/Audit_Verrouillage_v1.0.md:53 cite
+concurrence (vague 1), réfut. 1/3. docs/audit/Audit_Verrouillage_v1.0.md:53 cite
 `loadAlternative` — introuvable dans le code (la méthode réelle est `load`,
 ProductDetailView.swift:297) — et omet `renderCard` (CompareShareSheet.swift:47), qui
 fait pourtant partie de la même convention. **Correction** : remplacer un nom, en

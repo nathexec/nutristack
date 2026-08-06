@@ -35,7 +35,7 @@ targets:
         # Doit suivre l’entrée de tête du CHANGELOG. Elle valait "0.1.0" alors
         # que le journal en était à 0.3.x : l’app se serait présentée aux
         # testeurs sous un numéro qui ne désigne aucune version livrée.
-        CFBundleShortVersionString: "0.3.6"
+        CFBundleShortVersionString: "0.3.7"
         CFBundleVersion: "1"
         UILaunchScreen:
           UIColorName: LaunchBackground
