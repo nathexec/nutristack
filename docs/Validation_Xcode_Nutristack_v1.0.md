@@ -110,7 +110,7 @@ Aucun test n’est compté « valide » : ils sont comptés **écrits, cohérent
 
 **Vérifié absent, à fournir** : les **cinq graisses** de Schibsted Grotesk. Le code emploie exactement cinq poids (mesuré : regular ×7, medium ×1, semibold ×7, bold ×18, heavy ×10). Fichiers à déposer dans `Packages/NutristackDesignSystem/Sources/NutristackDesignSystem/Resources/Fonts/` : `SchibstedGrotesk-Regular.ttf`, `-Medium.ttf`, `-SemiBold.ttf`, `-Bold.ttf`, `-ExtraBold.ttf` (Google Fonts, licence SIL OFL ; « heavy » SwiftUI ↔ ExtraBold 800). Sans eux : **compilation OK, rendu non contractuel** (repli système silencieux ; contrôle : `DSFontFamily.isAvailable`).
 
-**Outils de poste** : Xcode 15.x (pas 16 : les variantes d’icône sombre/teintée ne sont volontairement pas déclarées), `brew install xcodegen swiftlint`.
+**Outils de poste** : Xcode 15.x (pas 16 : les variantes d’icône sombre/teintée ne sont volontairement pas déclarées), **XcodeGen 2.43.0** et **SwiftLint 0.57.0** exactement — pas par Homebrew, qui pose la version courante : XcodeGen ≥ 2.44.0 écrit un projet que Xcode 15.4 refuse d’ouvrir. Procédure d’installation dans `.github/actions/toolchain/action.yml` ; `./scripts/bootstrap.sh` vérifie la version avant de générer.
 
 ## 8. Checklist de validation Xcode, dans l’ordre
 

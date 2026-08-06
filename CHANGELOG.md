@@ -1,5 +1,36 @@
 # Journal des versions · Nutristack (app)
 
+## 0.3.6 · 6 août 2026 · le chemin d’installation documenté ne bloque plus la validation
+
+**Défaut principal.** `scripts/bootstrap.sh`, `docs/Protocole_Validation_Finale_v1.0.md`
+et `docs/Validation_Xcode_Nutristack_v1.0.md` prescrivaient tous trois
+`brew install xcodegen`. Le dépôt documente pourtant ailleurs — `README.md`,
+`.github/actions/toolchain/action.yml` — que Homebrew pose la version courante,
+et qu’à partir de 2.44.0 XcodeGen écrit un `objectVersion` (70, puis 77) que
+Xcode 15.4 refuse d’ouvrir. Sur un poste neuf, suivre le protocole faisait donc
+échouer son étape 2, et avec elle les étapes 9 à 22, celles qui restent à
+exécuter à la main. Le script contrôle désormais `xcodegen --version` avant de
+générer et affiche la procédure d’installation exacte ; les deux documents
+nomment les versions épinglées au lieu de renvoyer à Homebrew.
+
+**Contradictions de documentation levées.** Le README du design system
+affirmait que les polices ne sont pas versionnées : les cinq graisses le sont
+depuis la version 0.3.2. Il disait ses tests dépendants d’un simulateur iOS et
+le paquet limité à iOS, alors que `Package.swift` déclare `.macOS(.v14)`
+précisément pour que `swift test` tourne sur hôte, comme en CI. Il tolérait
+enfin « Xcode 15 ou plus récent », là où le projet exclut Xcode 16.
+
+**Décomptes.** L’entrée 0.3.1 annonçait 22 membres annotés `@MainActor` ; le
+diff de la PR #2 en compte 23 — `ExploreView.openDefaultComparison` porte son
+annotation sur une ligne séparée et avait échappé au comptage.
+
+**Version du bundle.** `CFBundleShortVersionString` valait `0.1.0` alors que ce
+journal en est à 0.3.x ; l’app se serait présentée aux testeurs sous un numéro
+ne désignant aucune version livrée.
+
+**Aucun fichier Swift modifié.** La baseline `4a70bdd80a03d359d3395ddc5aa8e34d`
+est intacte.
+
 ## 0.3.5 · 3 août 2026 · noms d’étapes et garde-fous du workflow
 
 **Nommage.** Les étapes suivent désormais une seule forme : un verbe à
@@ -87,12 +118,12 @@ empreinte globale `4a70bdd80a03d359d3395ddc5aa8e34d`).
 `View` impose `@MainActor` à `body`, mais **cette isolation ne se propage à
 aucun autre membre** : une `private var` ou une `private func` voisine reste un
 membre ordinaire d’une `struct` non isolée, et ne peut donc pas lire `AppRouter`,
-`TodayStore` ni `StackStore`. 22 membres étaient dans ce cas, sur 8 fichiers
+`TodayStore` ni `StackStore`. 23 membres étaient dans ce cas, sur 8 fichiers
 (`TodayView`, `StackScreen`, `ScannerView`, `ProductDetailView`, `NutriTabBar`,
 `ExploreView`, `RootView`, `ProfileView`). Correctif : l’annotation `@MainActor`
 explicite, exactement la convention que la baseline appliquait déjà à
 `ScannerView.startScanning`, `ProductDetailView.load` et `ExploreView.reload` —
-ces 22 membres avaient simplement été omis. Risque de régression nul : ce code
+ces 23 membres avaient simplement été omis. Risque de régression nul : ce code
 s’exécutait déjà sur le fil principal, l’annotation décrit l’existant.
 Deux erreurs restantes, distinctes : `ScannerEngineFactory.demonstrationCode`
 passe `nonisolated`, une valeur par défaut d’argument étant évaluée chez

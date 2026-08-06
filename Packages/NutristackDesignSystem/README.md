@@ -20,7 +20,9 @@ Composants : `Packshot` · `DSButtonStyle` / `PrimaryButton` · `MetricTile` (+ 
 
 ## Prérequis
 
-Xcode 15 ou plus récent · iOS 17 minimum (cible du PRD §12).
+Xcode 15.x — **pas 16** : les variantes d’icône sombre et teintée ne sont
+volontairement pas déclarées, et le projet est généré par XcodeGen 2.43.0, dont
+le format est celui que lit Xcode 15.4. iOS 17 minimum (cible du PRD §12).
 
 ## Installation
 
@@ -32,16 +34,17 @@ Une seule cible produit : `NutristackDesignSystem`.
 import NutristackDesignSystem
 ```
 
-## Polices (étape obligatoire pour le rendu exact)
+## Polices (condition du rendu exact)
 
-La famille unique est **Schibsted Grotesk** (licence SIL OFL). Les fichiers ne
-sont pas embarqués dans ce dépôt :
+La famille unique est **Schibsted Grotesk** (licence SIL OFL). Les cinq graisses
+statiques que le code emploie — Regular, Medium, SemiBold, Bold, ExtraBold —
+**sont versionnées** dans `Sources/NutristackDesignSystem/Resources/Fonts/` :
+rien à télécharger. `DSFontRegistrar` enregistre tout `.ttf` de ce dossier ; y
+ajouter des italiques ou d’autres graisses les embarquerait dans le binaire sans
+qu’aucun style ne les demande, la hiérarchie typographique du DS §4 se
+construisant par la graisse et jamais par un changement de famille.
 
-1. Téléchargez la famille sur Google Fonts (« Schibsted Grotesk »).
-2. Déposez `SchibstedGrotesk-Regular.ttf`, `-Medium.ttf`, `-SemiBold.ttf`,
-   `-Bold.ttf` et `-ExtraBold.ttf` dans
-   `Sources/NutristackDesignSystem/Resources/Fonts/`.
-3. Au démarrage de l’application, appelez :
+Au démarrage de l’application, appelez :
 
 ```swift
 DSFontRegistrar.registerBundledFonts()
@@ -106,9 +109,13 @@ ActiveGaugeCaption(
 
 ## Tests
 
-Les tests s’exécutent depuis Xcode avec une destination Simulateur iOS
-(le package cible iOS uniquement). Ils vérifient les règles, pas les pixels ;
-les tests d’instantanés arrivent avec l’app hôte (Plan §4).
+`swift test --package-path Packages/NutristackDesignSystem`, sur hôte macOS,
+comme en CI : `Package.swift` déclare `.iOS(.v17)` **et** `.macOS(.v14)`
+précisément pour que la suite tourne sans simulateur. Aucune cible de test Xcode
+n’existe — XcodeGen n’en génère pas pour les paquets locaux — et `⌘U` sur le
+schéma `Nutristack` répondrait « Scheme Nutristack is not currently configured
+for the test action ». Ces tests vérifient les règles, pas les pixels ; les
+tests d’instantanés arrivent avec l’app hôte (Plan §4).
 
 ## Gouvernance
 

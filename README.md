@@ -10,11 +10,17 @@ Prérequis : macOS avec **Xcode 15.x** — pas 16, les variantes d’icône somb
 teintée n’étant volontairement pas déclarées — et **XcodeGen 2.43.0**
 (`brew install xcodegen` installe une version plus récente, qui produit un
 projet au format que Xcode 15.4 refuse ; la CI épingle 2.43.0, voir
-`.github/actions/toolchain`). Le projet Xcode est généré, jamais versionné.
+`.github/actions/toolchain`, qui donne aussi la procédure d’installation). Le
+projet Xcode est généré, jamais versionné.
 
 ```bash
 ./scripts/bootstrap.sh        # génère Nutristack.xcodeproj et l’ouvre
 ```
+
+Le script refuse de générer si la version de XcodeGen n’est pas 2.43.0 et
+rappelle la marche à suivre : l’échec survient là, avec sa cause, plutôt que
+plus tard dans Xcode sous la forme « cannot be opened because it is in a future
+Xcode project file format ».
 
 Polices (rendu contractuel) : la famille **Schibsted Grotesk** (Google Fonts,
 licence SIL OFL) est versionnée dans

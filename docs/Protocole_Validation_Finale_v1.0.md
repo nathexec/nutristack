@@ -31,7 +31,16 @@
 > elles exigent un simulateur piloté à la main, un appareil physique ou
 > Instruments, qu’aucune automatisation ne remplace.
 
-**Matériel requis** : Mac (macOS 14+), Xcode 15.x (pas 16 : les variantes d’icône sombre/teintée ne sont volontairement pas déclarées), `brew install xcodegen swiftlint`, simulateur iPhone 15 (iOS 17), un iPhone physique sous iOS 17, les polices Schibsted Grotesk (Google Fonts, licence SIL OFL, fichiers statiques).
+**Matériel requis** : Mac (macOS 14+), Xcode 15.x (pas 16 : les variantes d’icône sombre/teintée ne sont volontairement pas déclarées), **XcodeGen 2.43.0** et **SwiftLint 0.57.0** exactement, simulateur iPhone 15 (iOS 17), un iPhone physique sous iOS 17, les polices Schibsted Grotesk (Google Fonts, licence SIL OFL, fichiers statiques).
+
+> **Ne pas installer l’outillage par Homebrew.** `brew install xcodegen` pose la
+> version courante ; à partir de 2.44.0 elle écrit un `objectVersion` que
+> Xcode 15.4 refuse d’ouvrir, ce qui fait échouer l’étape 2 et bloque toute la
+> suite. `brew install swiftlint` fait de même sur `--strict`, où chaque règle
+> nouvelle devient un échec. Les versions et la procédure d’installation exacte
+> sont dans `.github/actions/toolchain/action.yml` ; `./scripts/bootstrap.sh`
+> contrôle la version de XcodeGen avant de générer et rappelle la marche à
+> suivre s’il constate un écart.
 
 **Règles transverses** :
 - *Régression (définition générale)* : tout élément antérieurement PASS (y compris les 29 tests déjà verts et les valeurs de la maquette v1.1) qui devient FAIL après une action corrective.
